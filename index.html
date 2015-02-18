@@ -3,7 +3,144 @@
     <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+
+    <style>
+      dl.history > dd {
+        padding-left: 20px;
+      }
+
+      dl.horizontal > dt {
+        float: left;
+        clear: left;
+        width: 80px;
+      }
+    </style>
   </head>
   <body>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#header">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Colin Williams</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Resume</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-12 col-sm-3">
+          <dl class="horizontal">
+            <dt>Email</dt>
+            <dd>colin@colinwilliams.name</dd>
+            <dt>Resume</dt>
+            <dd><a href="http://resume.colinwilliams.name/">
+                resume.colinwilliams.name
+            </a></dd>
+            <dt>Blog</dt>
+            <dd><a href="http://blog.colinwilliams.name/">
+                blog.colinwilliams.name
+            </a></dd>
+            <dt>GitHub</dt>
+            <dd><a href="https://github.com/lackita">lackita</a></dd>
+            <dt>Twitter</dt>
+            <dd><a href="https://twitter.com/lackita101">@lackita101</a></dd>
+          </dl>
+        </div>
+        <div class="col-xs-12 col-sm-9">
+          <ul>
+            <li>Eight years of industry experience, ranging from back-end automation to front-end design.</li>
+            <li>Founder of CodeFu, a group at athenahealth dedicated to studying interesting topics in Computer Science.</li>
+            <li>Strong advocate for automated testing, authoring several unit testing facilities at athenahealth.</li>
+            <li>Took a two month sabbatical to become a better developer, focusing on learning lisp.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <h4>Experience</h4>
+          <dl class="history">
+            <dt>2006-present athenahealth</dt>
+            <dd>
+              <dl class="ul-horizontal">
+                <dt>2014-present Subsystems Senior Developer</dt>
+                <dd><ul>
+                    <li>Team leading effort to divide over 2 million lines of code into ~30 business domains.</li>
+                    <li>Redesigned intranet site supporting this effort, based on feedback gathered from several users.</li>
+                    <li>Improved usability of the service bus, the programmatic interface between business domains.</li>
+                </ul></dd>
+
+                <dt>2013-2014 QA Queue Team Lead</dt>
+                <dd><ul>
+                    <li>Led two other developers in fixing bugs and building features for automated testing and release deployment.</li>
+                    <li>Built a single consistent interface for interacting with Perforce, layered on top of their official API.  Refactored disparate ad-hoc interactions to go through this interface.</li>
+                    <li>Improved athenahealth's oracle database migration logic to work with an acquisitions oracle databases.</li>
+                </ul></dd>
+
+                <dt>2011-2012 Regression Testing Senior Developer</dt>
+                <dd><ul>
+                    <li>Created system for coordinating reservation of assets between jobs, which is now used by most of the automated testing.</li>
+                    <li>Designed a job management system to allow regression testing to scale from the use of ~8 databases to over 40 databases.</li>
+                    <li>Unified several different types of regressions into a single framework, eliminating large amounts of duplication between them.</li>
+                </ul></dd>
+
+                <dt>2008-2010 Clinicals Network Interfaces Developer</dt>
+                <dd><ul>
+                    <li>Removed developers from the process for building the network interface between practices and Labcorp, Quest and Surescripts.</li>
+                    <li>Eliminated a large amount of duplication in creating interfaces with new labs, which allowed the role to scale during a period of exponential growth for the product.</li>
+                </ul></dd>
+
+                <dt>2006-2007 Clinicals Bug Queue</dt>
+                <dd><ul>
+                    <li>Triaged bugs reported by clients related to the clinicals product.</li>
+                    <li>Became a specialist in the templating system used for physical exams.</li>
+                </ul></dd>
+              </dl>
+            </dd>
+            <dt>2005 Acxiom Internship</dt>
+            <dt>2002-2006 Hendrix College</dt>
+            <dd>
+              <dl>
+                <dt>2005-2006 Research Assistent</dt>
+                <dt>2004 Ring Laser Internship</dt>
+                <dt>2002-2005 Web Developer</dt>
+              </dl>
+            </dd>
+            <dt>2002 Stillwater National Bank Web Developer</dt>
+          </dl>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-6">
+          <h4>Education</h4>
+          <dl class="history">
+            <dt>2002-2006 Hendrix College</dt>
+            <dd>Bachelor of Arts, 2006</dd>
+            <dd>Double major in Mathematics and Computer Science, with distinction</dd>
+            <dd>Robert C. Esling Computer Science Award</dd>
+        </div>
+        <div class="col-xs-6">
+          <h4>Proficient Languages</h4>
+          <ul>
+            <li>Perl</li>
+            <li>Clojure</li>
+            <li>Python</li>
+            <li>Ruby</li>
+            <li>Java</li>
+            <li>Javascript</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
