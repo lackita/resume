@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<title>Colin Williams - Resume</title>
 		<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
@@ -68,8 +69,7 @@
 								<li><a href="https://twitter.com/lackita101"><b>Twitter</b> <span class="contact">@lackita101</span></a></li>
 							</ul>
 						</li>
-						<li class="active"><a href="#">Resume</a></li>
-						<li><a href="Colin_Williams.pdf">Printable Version</a></li>
+						<li class="active"><a href="#">Resume <span href="Colin_Williams.pdf" class="print glyphicon glyphicon-print"></span></a></li>
 					</ul>
 				</div>
 			</div>
@@ -181,5 +181,14 @@
 				</div>
 			</div>
 		</div>
+
+		<script>
+			$(document).ready(function () {
+				$(".print").on("click", function() {
+					window.location.href = "Colin_Williams.pdf";
+					return false;
+				});
+			});
+		</script>
 	</body>
 </html>
