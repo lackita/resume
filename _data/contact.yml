@@ -1,0 +1,15 @@
+- name: Email
+  href: mailto:colin@colinwilliams.name
+  contact: colin@colinwilliams.name
+- name: Resume
+  href: http://resume.colinwilliams.name/
+  contact: resume.colinwilliams.name
+- name: Blog
+  href: http://blog.colinwilliams.name/
+  contact: blog.colinwilliams.name
+- name: GitHub
+  href: https://github.com/lackita
+  contact: lackita
+- name: Twitter
+  href: https://twitter.com/lackita101
+  contact: "@lackita101"

@@ -1,0 +1,21 @@
+<dl class="indent-dd">
+	{% for company in site.data.experience[include.focus] %}
+		<dt>{{ company.name }} {{ company.dates }}</dt>
+		{% if company.positions %}
+			<dd>
+				<dl>
+					{% for position in company.positions %}
+						<dt>{{ position.title }} {{ position.dates }}</dt>
+						{% if site.data[page.data].experience[company.key][position.key] %}
+							<dd><ul>
+								{% for project in site.data[page.data].experience[company.key][position.key] %}
+									<li>{{ project }}</li>
+								{% endfor %}
+							</ul></dd>
+						{% endif %}
+					{% endfor %}
+				</dl>
+			</dd>
+		{% endif %}
+	{% endfor %}
+</dl>

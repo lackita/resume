@@ -1,0 +1,48 @@
+---
+layout: base
+---
+
+<div class="container">
+	<div class="row visible-print-block header">
+		<div class="col-xs-6"><h1>Colin Williams</h1></div>
+		<div class="col-xs-6">
+			{% for contact in site.data.contact %}
+				<div class="row">
+					<div class="col-xs-4"><b>{{ contact.name }}</b></div>
+					<div class="col-xs-8">{{ contact.contact }}</div>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="well">
+				<ul class="list-unstyled">
+					{% for summary in site.data[page.data].Summary %}
+					  <li>{{ summary }}</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			<h4>Experience</h4>
+			{% include experience.html focus="primary" %}
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-6">
+			{% include experience.html focus="secondary" %}
+		</div>
+		<div class="col-xs-6">
+			<h4>Education</h4>
+			<dl class="indent-dd">
+				<dt>Hendrix College 2002-2006</dt>
+				<dd>Double major in Mathematics and Computer Science, with distinction</dd>
+				<dd>Robert C. Eslinger Computer Science Award</dd>
+			</dl>
+		</div>
+	</div>
+</div>
