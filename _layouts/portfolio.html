@@ -1,0 +1,33 @@
+---
+layout: base
+---
+
+<div class="container">
+	<div class="row">
+		<div class="col-xs-12">
+			<div role="tabpanel">
+				<ul class="nav nav-tabs" role="tablist">
+					<li role="presentation" class="active"><a href="#java" role="tab" data-toggle="tab">Java</a></li>
+					<li role="presentation"><a href="#clojure" role="tab" data-toggle="tab">Clojure</a></li>
+					<li role="presentation"><a href="#python" role="tab" data-toggle="tab">Python</a></li>
+					<li role="presentation"><a href="#ruby" role="tab" data-toggle="tab">Ruby</a></li>
+					<li role="presentation"><a href="#perl" role="tab" data-toggle="tab">Perl</a></li>
+				</ul>
+
+				<div class="tab-content">
+					<div role="tabpanel" class="tab-pane active" id="java">
+						{% include java.markdown %}
+					</div>
+					<div role="tabpanel" class="tab-pane" id="clojure">
+						{% include clojure.markdown %}
+					</div>
+					<div role="tabpanel" class="tab-pane" id="python">python</div>
+					<div role="tabpanel" class="tab-pane" id="ruby">
+						{% include ruby.markdown %}
+					</div>
+					<div role="tabpanel" class="tab-pane" id="perl">perl</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
