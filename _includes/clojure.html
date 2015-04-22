@@ -1,7 +1,6 @@
-Problem
-=======
-[Problem #140](http://www.4clojure.com/problem/140) on (4clojure.org) asks to build a Karnaugh Map to simplify provided boolean 
-expressions.  They will be provided in the following form:
+<h1>Problem</h1>
+<p><a href="http://www.4clojure.com/problem/140">Problem #140</a> on <a href="http://4clojure.org">4clojure.org</a> asks to build a Karnaugh Map to simplify provided boolean 
+expressions.  They will be provided in the following form:</p>
 
 <pre><code class="clojure">#{#{'a 'B 'C 'd}
   #{'A 'b 'c 'd}
@@ -12,23 +11,22 @@ expressions.  They will be provided in the following form:
   #{'A 'B 'c 'D}
   #{'A 'B 'C 'd}}</code></pre>
 
-Where each set is a rule, uppercase letters represent true and lowercase false.
+<p>Where each set is a rule, uppercase letters represent true and lowercase false.</p>
 
-Solution
-========
-There are three basic components to the problem:
-- Build a data structure representing the Karnaugh Map for the rules.
-- Determinine the boxes to draw around groups of true entries.
-- Remove superfluous boxes.
+<h1>Solution</h1>
+<p>There are three basic components to the problem:</p>
+<ul>
+  <li>Build a data structure representing the Karnaugh Map for the rules.</li>
+  <li>Determinine the boxes to draw around groups of true entries.</li>
+  <li>Remove superfluous boxes.</li>
+</ul>
 
 <pre><code class="clojure">(defn simplify-rules [conditions]
   (->> (build-kmap conditions)
        identify-simplifications
        (prune-duplicates conditions)))</code></pre>
 
-Building the K-Map
-------------------
-
+<h3>Building the K-Map</h3>
 
 <pre><code class="clojure">(defn negative [s]
   (symbol (.toLowerCase (name s))))
@@ -66,9 +64,7 @@ Building the K-Map
      :width (count (first grid))
      :height (count grid)}))</code></pre>
 
-Determine Boxes
----------------
-
+<h3>Determine Boxes</h3>
 
 <pre><code class="clojure">(defn gray-codes-for-box [gray-codes positions]
   (apply clojure.set/intersection
@@ -106,8 +102,7 @@ Determine Boxes
                        (map first)))
        [8 4 2 1]))</code></pre>
 
-Prune Duplicates
-----------------
+<h3>Prune Duplicates</h3>
 <pre><code class="clojure">(defn already-fulfilled? [existing-conditions new-condition]
   (not (some (fn [existing]
                (every? new-condition existing))
