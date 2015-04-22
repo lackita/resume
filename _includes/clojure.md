@@ -1,6 +1,6 @@
 Problem
 =======
-[Problem #140](http://www.4clojure.com/problem/140) on 4clojure.org asks to build a Karnaugh Map to simplify provided boolean 
+[Problem #140](http://www.4clojure.com/problem/140) on (4clojure.org) asks to build a Karnaugh Map to simplify provided boolean 
 expressions.  They will be provided in the following form:
 
 <pre><code class="clojure">#{#{'a 'B 'C 'd}
