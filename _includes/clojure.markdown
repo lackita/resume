@@ -1,3 +1,35 @@
+Problem
+=======
+[Problem #140](http://www.4clojure.com/problem/140) on 4clojure.org asks to build a Karnaugh Map to simplify provided boolean 
+expressions.  They will be provided in the following form:
+
+<pre><code class="clojure">#{#{'a 'B 'C 'd}
+  #{'A 'b 'c 'd}
+  #{'A 'b 'c 'D}
+  #{'A 'b 'C 'd}
+  #{'A 'b 'C 'D}
+  #{'A 'B 'c 'd}
+  #{'A 'B 'c 'D}
+  #{'A 'B 'C 'd}}</code></pre>
+
+Where each set is a rule, uppercase letters represent true and lowercase false.
+
+Solution
+========
+There are three basic components to the problem:
+- Build a data structure representing the Karnaugh Map for the rules.
+- Determinine the boxes to draw around groups of true entries.
+- Remove superfluous boxes.
+
+<pre><code class="clojure">(defn simplify-rules [conditions]
+  (->> (build-kmap conditions)
+       identify-simplifications
+       (prune-duplicates conditions)))</code></pre>
+
+Building the K-Map
+------------------
+
+
 <pre><code class="clojure">(defn negative [s]
   (symbol (.toLowerCase (name s))))
 
@@ -32,10 +64,13 @@
      :x-gray-codes x-gray-codes
      :y-gray-codes y-gray-codes
      :width (count (first grid))
-     :height (count grid)}))
+     :height (count grid)}))</code></pre>
+
+Determine Boxes
+---------------
 
 
-(defn gray-codes-for-box [gray-codes positions]
+<pre><code class="clojure">(defn gray-codes-for-box [gray-codes positions]
   (apply clojure.set/intersection
          (map #(nth gray-codes %) positions)))
 
@@ -69,10 +104,11 @@
   (map (fn [size] (->> (boxes-sized kmap size)
                        (filter #(not (get-in % [1 0])))
                        (map first)))
-       [8 4 2 1]))
+       [8 4 2 1]))</code></pre>
 
-
-(defn already-fulfilled? [existing-conditions new-condition]
+Prune Duplicates
+----------------
+<pre><code class="clojure">(defn already-fulfilled? [existing-conditions new-condition]
   (not (some (fn [existing]
                (every? new-condition existing))
              existing-conditions)))
@@ -94,10 +130,4 @@
        (identify-condition-coverage full-conditions)
        (filter #(= (count (val %)) 1))
        (mapcat val)
-       set))
-
-
-(defn simplify-rules [conditions]
-  (->> (build-kmap conditions)
-       identify-simplifications
-       (prune-duplicates conditions)))</code></pre>
+       set))</code></pre>
