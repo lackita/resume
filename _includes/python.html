@@ -1,6 +1,6 @@
 <h2>Problem</h2>
 
-<p></p><a href="https://projecteuler.net/problem=167">Problem 167</a> on <a href="https://projecteuler.net">Project Euler</a> works with Ulam numbers, also referred to as 1-additive sequences in several mathematical papers. Reproducing the problem statement here:</p>
+<p><a href="https://projecteuler.net/problem=167">Problem 167</a> on <a href="https://projecteuler.net">Project Euler</a> works with Ulam numbers, also referred to as 1-additive sequences in several mathematical papers. Reproducing the problem statement here:</p>
 
 <p>For two positive integers a and b, the Ulam sequence \(U(a,b)\) is defined by \(U(a,b)_1 = a\), \(U(a,b)_2 = b\) and for \(k > 2\), \(U(a,b)_k\) is the smallest integer greater than \(U(a,b)_{k-1}\) which can be written in exactly one way as the sum of two distinct previous members of \(U(a,b)\).</p>
 
@@ -12,40 +12,15 @@ $$1, 2, 3 = 1 + 2, 4 = 1 + 3, 6 = 2 + 4, 8 = 2 + 6, 11 = 3 + 8;$$
 
 <h2>Solution</h2>
 
-<pre><code class="python">import unittest
+<p>The first thing to note is that all of the sequences in the summation have precisely two even numbers: \(2\) and \(4n + 4\). This is proven <a href="http://ac.els-cdn.com/0097316594900582/1-s2.0-0097316594900582-main.pdf?_tid=6ef7d52c-e6b1-11e4-8580-00000aab0f02&acdnat=1429461227_c08cbfd1b42b6e2b8d5e660fd9262e32">here</a>, so the property can be relied upon to hold true as well into larger values.</p>
+<p>Additionally, it is proven <a href="http://www.mathstat.dal.ca/FQ/Scanned/29-3/finch.pdf">here</a> that any 1-additive sequence with finitely even terms is eventually regular. A sequence is regular if successive differences repeat.</p>
+<p>These properties lead to a two-phase solution. Compute enough values to determine a repeating period and using the period size and cumulative difference (also referred to as the fundamental difference) to compute the value for \(k=10^11\).</p>
 
-class UlamTest(unittest.TestCase):
-    def test_precomputed(self):
-        u = U(5)
-        for (k, x) in [(1, 2), (2, 5), (3, 7), (4, 9), (5, 11), (6, 12), (7, 13), (8, 15), (9, 19), (10, 23), (11, 27), (12, 29)]:
-            self.assertEquals(u.compute(k), x)
+<h3>Calculating Sample Values</h3>
 
-    def test_period(self):
-        for n in range(2, 5):
-            v = 2*n + 1
-            u = U(v)
-            p = Period(u, 100)
-            ks = [500*x + 500 for x in range(1, 20)]
-            ks.append(p.period_start + 1)
-            for k in ks:
-                self.assertEquals(u.compute(k), p.compute(k), "v: " + str(v) + " k: " + str(k))
+<p>Because there are only two even values in the sequence, one of these two values must be a component in the sum of every odd number. Whenever a new odd value is computed for a sequence, it introduces two candidates into the pool of potential values, which are stored into a priority queue. The next value in the sequence can then be determined by pulling values out of the queue until a non-repeating entry is found.</p>
 
-    def test_large_values(self):
-        self.assertEquals(Period(U(5), 100).compute(10**11), 393749999981)
-        self.assertEquals(Period(U(7), 100).compute(10**11), 484615384605)
-        self.assertEquals(Period(U(9), 100).compute(10**11), 400450450395)
-        self.assertEquals(Period(U(11), 100).compute(10**11), 399877149781)
-        self.assertEquals(Period(U(13), 100).compute(10**11), 399966136001)
-        self.assertEquals(Period(U(15), 100).compute(10**11), 637499999951)
-        self.assertEquals(Period(U(17), 100).compute(10**11), 400001574629)
-        self.assertEquals(Period(U(19), 100).compute(10**11), 399999473477)
-        self.assertEquals(Period(U(21), 100).compute(10**11), 399999900065)
-
-if __name__ == '__main__':
-    unittest.main()
-
-
-from Queue import PriorityQueue
+<pre><code class="python">from Queue import PriorityQueue
 
 class U(object):
     def __init__(self, v):
@@ -67,20 +42,13 @@ class U(object):
                 if candidate % 2 == 1:
                     self.candidates.put(2 + candidate)
                     self.candidates.put(2*self.computed[1] + 2 + candidate)
-        return self.computed[k - 1]
+        return self.computed[k - 1]</code></pre>
 
+<h3>Determining Period</h3>
 
-class UTest(unittest.TestCase):
-    def test_precomputed(self):
-        u = U(5)
-        for (k, x) in [(1, 2), (2, 5), (3, 7), (4, 9), (5, 11), (6, 12), (7, 13), (8, 15), (9, 19), (10, 23), (11, 27), (12, 29)]:
-            self.assertEquals(u.compute(k), x)
+<p>With a fast way of directly computing values, enough can be generated to determine a period. This is accomplished with a lazily-evaluated sequence of differences, checking increasingly large period sizes until one is found that repeats.</p>
 
-if __name__ == '__main__':
-    unittest.main()
-
-
-class Period(object):
+<pre><code class="python">class Period(object):
     def __init__(self, u, period_start):
         self.period_start = period_start
         self.minimum_period = 20
@@ -115,9 +83,13 @@ class Period(object):
             return self.u.compute(k)
         fundamental_difference = sum(self.period)
         base = self.u.compute(self.period_start) + fundamental_difference*((k - self.period_start)/len(self.period))
-        return base + sum(self.period[0:(k - self.period_start)%len(self.period)])
+        return base + sum(self.period[0:(k - self.period_start)%len(self.period)])</code></pre>
 
-result = 0
+<h3>Compute Answer</h3>
+
+<p>Now it's possible to compute the final answer, which takes about two minutes, most of which is spent computing the period when \(n=10\). The intermediate values were printed so they can be copied to unit tests used during refinement of the calculation.</p>
+
+<pre><code class="python">result = 0
 for n in range(2, 11):
     v = 2*n + 1
     u = U(v)
