@@ -136,7 +136,39 @@ public class DotCollider implements Iterable<Dot> {
 
 					</div>
 					<div role="tabpanel" class="tab-pane" id="clojure">
-						<pre><code class="clojure">(defn negative [s]
+						<h1>Problem</h1>
+<p><a href="http://www.4clojure.com/problem/140">Problem #140</a> on <a href="http://4clojure.org">4clojure.org</a> asks to build a Karnaugh Map to simplify provided boolean
+expressions.  They will be provided in the following form:</p>
+
+<pre><code class="clojure">#{#{'a 'B 'C 'd}
+  #{'A 'b 'c 'd}
+  #{'A 'b 'c 'D}
+  #{'A 'b 'C 'd}
+  #{'A 'b 'C 'D}
+  #{'A 'B 'c 'd}
+  #{'A 'B 'c 'D}
+  #{'A 'B 'C 'd}}</code></pre>
+
+<p>Where each set is a rule, uppercase letters represent true and lowercase false.</p>
+
+<h1>Solution</h1>
+<p>There are three basic components to the problem:</p>
+<ul>
+  <li>Build a data structure representing the Karnaugh Map for the rules.</li>
+  <li>Determinine the boxes to draw around groups of true entries.</li>
+  <li>Remove superfluous boxes.</li>
+</ul>
+
+<pre><code class="clojure">(defn simplify-rules [conditions]
+  (->> (build-kmap conditions)
+       identify-simplifications
+       (prune-duplicates conditions)))</code></pre>
+
+<h3>Building the K-Map</h3>
+
+<p>To build the K-Map, the variables need to be divided between those appearing in columns and those appearing in rows, which then must be ordered as gray codes.</p>
+
+<pre><code class="clojure">(defn negative [s]
   (symbol (.toLowerCase (name s))))
 
 (defn positive [s]
@@ -152,9 +184,11 @@ public class DotCollider implements Iterable<Dot> {
                      (reverse subsequent-gray-codes))))))
 
 (defn divide-symbols [symbols]
-  (split-at (Math/ceil (/ (count symbols) 2)) symbols))
+  (split-at (Math/ceil (/ (count symbols) 2)) symbols))</code></pre>
 
-(defn build-grid [conditions x-gray-codes y-gray-codes]
+<p>With the structure established, the K-Map can be built. This then gets combined with some other information that will be needed elsewhere in the problem.</p>
+
+<pre><code class="clojure">(defn build-grid [conditions x-gray-codes y-gray-codes]
   (map (fn [y-gray-code]
          (map #(if (conditions (set (concat % y-gray-code))) 1 0)
               x-gray-codes)) y-gray-codes))
@@ -170,47 +204,55 @@ public class DotCollider implements Iterable<Dot> {
      :x-gray-codes x-gray-codes
      :y-gray-codes y-gray-codes
      :width (count (first grid))
-     :height (count grid)}))
+     :height (count grid)}))</code></pre>
 
+<h3>Determine Boxes</h3>
 
-(defn gray-codes-for-box [gray-codes positions]
-  (apply clojure.set/intersection
-         (map #(nth gray-codes %) positions)))
+<p>Karnaugh Maps work by identifying rectangles within the grid which only contain true values, for which width and height must be powers of two. Every possible box which meets the dimension requirement is considered, and those meeting this requirement are determined.</p>
 
-(defn cyclic-ranges [distance size]
+<p>To describe each rectangle, a set containing every coordinate pair within the rectangle is produced.</p>
+
+<pre><code class="clojure">(defn cyclic-ranges [distance size]
   (for [start (range distance)]
     (take size (drop start (cycle (range distance))))))
 
 (defn rectangle-coordinates [kmap size]
   (set (for [divisor [1 2 4]
-             xs (cyclic-ranges (kmap :width)
-                               (/ size divisor))
-             ys (cyclic-ranges (kmap :height)
-                               divisor)]
-         (set (for [x xs y ys] [x y])))))
+             xs (cyclic-ranges (kmap :width) (/ size divisor))
+             ys (cyclic-ranges (kmap :height) divisor)]
+         (set (for [x xs y ys] [x y])))))</code></pre>
+
+<p>Each box must also be combined with the associated gray codes.</p>
+
+<pre><code class="clojure">(defn gray-codes-for-box [gray-codes positions]
+  (apply clojure.set/intersection
+         (map #(nth gray-codes %) positions)))
 
 (defn convert-pairs-to-expressions [kmap pairs]
   [(clojure.set/union
-    (gray-codes-for-box (kmap :x-gray-codes)
-                        (map first pairs))
-    (gray-codes-for-box (kmap :y-gray-codes)
-                        (map second pairs)))
+    (gray-codes-for-box (kmap :x-gray-codes) (map first pairs))
+    (gray-codes-for-box (kmap :y-gray-codes) (map second pairs)))
    (set (map (fn [[x y]] (nth (nth (kmap :grid)
                                    y) x))
              pairs))])
 
 (defn boxes-sized [kmap size]
   (set (map #(convert-pairs-to-expressions kmap %)
-            (rectangle-coordinates kmap size))))
+            (rectangle-coordinates kmap size))))</code></pre>
 
-(defn identify-simplifications [kmap]
+<p>Finally, those boxes are reduced down to only those which are valid simplifications of the original rules.</p>
+
+<pre><code class="clojure">(defn identify-simplifications [kmap]
   (map (fn [size] (->> (boxes-sized kmap size)
                        (filter #(not (get-in % [1 0])))
                        (map first)))
-       [8 4 2 1]))
+       [8 4 2 1]))</code></pre>
 
+<h3>Prune Duplicates</h3>
 
-(defn already-fulfilled? [existing-conditions new-condition]
+<p>There is a lot of overlap between candidate simplifications. Each superfluous box is either subsumed by a larger box or completely covered by some other combination of boxes. The former will be determined first, so that fewer candidates must be considered in the more complex algorithm required for the latter.</p>
+
+<pre><code class="clojure">(defn already-fulfilled? [existing-conditions new-condition]
   (not (some (fn [existing]
                (every? new-condition existing))
              existing-conditions)))
@@ -219,30 +261,153 @@ public class DotCollider implements Iterable<Dot> {
   (set (reduce (fn [existing-conditions new-conditions]
                  (into existing-conditions
                        (filter #(already-fulfilled? existing-conditions %) new-conditions)))
-               simplified-conditions)))
+               simplified-conditions)))</code></pre>
 
-(defn identify-condition-coverage [full-conditions simplified-conditions]
+</code></pre>
+
+<p>Identifying rules subsumed by others is more complicated. This is accomplished by tracking all of the rules that cover a true value in the grid, then systematically removing any that do not cover an original rule exclusively. The coverage information must be updated after each removal, otherwise a series of overlapping pairs could be completely removed.</p>
+
+<pre><code class="clojure">(defn identify-condition-coverage [full-conditions simplified-conditions]
   (into {} (map (fn [condition]
-                  [condition (filter #(every? condition %)
-                                     simplified-conditions)])
+                  [condition (set (filter #(every? condition %)
+                                          simplified-conditions))])
                 full-conditions)))
 
+(defn necessary-condition? [coverage candidate]
+  (some #(and (= 1 (count %)) (% candidate)) (vals coverage)))
+
+(defn remove-from-coverage [coverage candidate]
+  (into {} (map (fn [[original-rule covering-rules]]
+                  [original-rule (disj covering-rules candidate)])
+                coverage)))
+
 (defn prune-duplicates [full-conditions simplified-conditions]
-  (->> (prune-fulfilled simplified-conditions)
-       (identify-condition-coverage full-conditions)
-       (filter #(= (count (val %)) 1))
-       (mapcat val)
-       set))
-
-
-(defn simplify-rules [conditions]
-  (->> (build-kmap conditions)
-       identify-simplifications
-       (prune-duplicates conditions)))</code></pre>
+  (let [pruned-conditions (prune-fulfilled simplified-conditions)
+        condition-coverage (identify-condition-coverage full-conditions pruned-conditions)]
+    (second (reduce (fn [[coverage necessary] candidate]
+                      (if (necessary-condition? coverage candidate)
+                        [coverage (conj necessary candidate)]
+                        [(remove-from-coverage coverage candidate) necessary]))
+                    [condition-coverage #{}]
+                    pruned-conditions))))</code></pre>
 
 					</div>
 					<div role="tabpanel" class="tab-pane" id="python">
-						Under Construction
+						<pre><code class="python">import unittest
+
+class UlamTest(unittest.TestCase):
+    def test_precomputed(self):
+        u = U(5)
+        for (k, x) in [(1, 2), (2, 5), (3, 7), (4, 9), (5, 11), (6, 12), (7, 13), (8, 15), (9, 19), (10, 23), (11, 27), (12, 29)]:
+            self.assertEquals(u.compute(k), x)
+
+    def test_period(self):
+        for n in range(2, 5):
+            v = 2*n + 1
+            u = U(v)
+            p = Period(u, 100)
+            ks = [500*x + 500 for x in range(1, 20)]
+            ks.append(p.period_start + 1)
+            for k in ks:
+                self.assertEquals(u.compute(k), p.compute(k), "v: " + str(v) + " k: " + str(k))
+
+    def test_large_values(self):
+        self.assertEquals(Period(U(5), 100).compute(10**11), 393749999981)
+        self.assertEquals(Period(U(7), 100).compute(10**11), 484615384605)
+        self.assertEquals(Period(U(9), 100).compute(10**11), 400450450395)
+        self.assertEquals(Period(U(11), 100).compute(10**11), 399877149781)
+        self.assertEquals(Period(U(13), 100).compute(10**11), 399966136001)
+        self.assertEquals(Period(U(15), 100).compute(10**11), 637499999951)
+        self.assertEquals(Period(U(17), 100).compute(10**11), 400001574629)
+        self.assertEquals(Period(U(19), 100).compute(10**11), 399999473477)
+        self.assertEquals(Period(U(21), 100).compute(10**11), 399999900065)
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+from Queue import PriorityQueue
+
+class U(object):
+    def __init__(self, v):
+        self.computed = []
+        self.candidates = PriorityQueue()
+        self.candidates.put(2)
+        self.candidates.put(v)
+        self.candidates.put(2*v + 2)
+
+    def compute(self, k):
+        while len(self.computed) < k:
+            candidate = self.candidates.get()
+            valid = True
+            while not self.candidates.empty() and self.candidates.queue[0] == candidate:
+                valid = False
+                self.candidates.get()
+            if valid:
+                self.computed.append(candidate)
+                if candidate % 2 == 1:
+                    self.candidates.put(2 + candidate)
+                    self.candidates.put(2*self.computed[1] + 2 + candidate)
+        return self.computed[k - 1]
+
+
+class UTest(unittest.TestCase):
+    def test_precomputed(self):
+        u = U(5)
+        for (k, x) in [(1, 2), (2, 5), (3, 7), (4, 9), (5, 11), (6, 12), (7, 13), (8, 15), (9, 19), (10, 23), (11, 27), (12, 29)]:
+            self.assertEquals(u.compute(k), x)
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+class Period(object):
+    def __init__(self, u, period_start):
+        self.period_start = period_start
+        self.minimum_period = 20
+        self.diffs = []
+        self.previous = u.compute(period_start)
+        self.u = u
+        self.period = self.compute_period()
+
+    def compute_period(self):
+        period_length = self.minimum_period
+        while not self.verify_period(period_length):
+            period_length += 1
+        return self.diffs[0:period_length]
+
+    def verify_period(self, period_length):
+        i = period_length
+        while i <= 2*period_length:
+            if self.lookup_diff(i) != self.lookup_diff(i % period_length):
+                return False
+            i += 1
+        return True
+
+    def lookup_diff(self, i):
+        while i >= len(self.diffs):
+            s = self.u.compute(self.period_start + 1 + len(self.diffs))
+            self.diffs.append(s - self.previous)
+            self.previous = s
+        return self.diffs[i]
+
+    def compute(self, k):
+        if k <= self.period_start:
+            return self.u.compute(k)
+        fundamental_difference = sum(self.period)
+        base = self.u.compute(self.period_start) + fundamental_difference*((k - self.period_start)/len(self.period))
+        return base + sum(self.period[0:(k - self.period_start)%len(self.period)])
+
+result = 0
+for n in range(2, 11):
+    v = 2*n + 1
+    u = U(v)
+    period = Period(u, 100)
+    x = period.compute(10**11)
+    print str(v) + ": " + str(x)
+    print len(period.period)
+    result += x
+print result</code></pre>
 
 					</div>
 					<div role="tabpanel" class="tab-pane" id="ruby">

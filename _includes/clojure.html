@@ -1,5 +1,5 @@
 <h1>Problem</h1>
-<p><a href="http://www.4clojure.com/problem/140">Problem #140</a> on <a href="http://4clojure.org">4clojure.org</a> asks to build a Karnaugh Map to simplify provided boolean 
+<p><a href="http://www.4clojure.com/problem/140">Problem #140</a> on <a href="http://4clojure.org">4clojure.org</a> asks to build a Karnaugh Map to simplify provided boolean
 expressions.  They will be provided in the following form:</p>
 
 <pre><code class="clojure">#{#{'a 'B 'C 'd}
@@ -28,6 +28,8 @@ expressions.  They will be provided in the following form:</p>
 
 <h3>Building the K-Map</h3>
 
+<p>To build the K-Map, the variables need to be divided between those appearing in columns and those appearing in rows, which then must be ordered as gray codes.</p>
+
 <pre><code class="clojure">(defn negative [s]
   (symbol (.toLowerCase (name s))))
 
@@ -44,9 +46,11 @@ expressions.  They will be provided in the following form:</p>
                      (reverse subsequent-gray-codes))))))
 
 (defn divide-symbols [symbols]
-  (split-at (Math/ceil (/ (count symbols) 2)) symbols))
+  (split-at (Math/ceil (/ (count symbols) 2)) symbols))</code></pre>
 
-(defn build-grid [conditions x-gray-codes y-gray-codes]
+<p>With the structure established, the K-Map can be built. This then gets combined with some other information that will be needed elsewhere in the problem.</p>
+
+<pre><code class="clojure">(defn build-grid [conditions x-gray-codes y-gray-codes]
   (map (fn [y-gray-code]
          (map #(if (conditions (set (concat % y-gray-code))) 1 0)
               x-gray-codes)) y-gray-codes))
@@ -66,43 +70,50 @@ expressions.  They will be provided in the following form:</p>
 
 <h3>Determine Boxes</h3>
 
-<pre><code class="clojure">(defn gray-codes-for-box [gray-codes positions]
-  (apply clojure.set/intersection
-         (map #(nth gray-codes %) positions)))
+<p>Karnaugh Maps work by identifying rectangles within the grid which only contain true values, for which width and height must be powers of two. Every possible box which meets the dimension requirement is considered, and those meeting this requirement are determined.</p>
 
-(defn cyclic-ranges [distance size]
+<p>To describe each rectangle, a set containing every coordinate pair within the rectangle is produced.</p>
+
+<pre><code class="clojure">(defn cyclic-ranges [distance size]
   (for [start (range distance)]
     (take size (drop start (cycle (range distance))))))
 
 (defn rectangle-coordinates [kmap size]
   (set (for [divisor [1 2 4]
-             xs (cyclic-ranges (kmap :width)
-                               (/ size divisor))
-             ys (cyclic-ranges (kmap :height)
-                               divisor)]
-         (set (for [x xs y ys] [x y])))))
+             xs (cyclic-ranges (kmap :width) (/ size divisor))
+             ys (cyclic-ranges (kmap :height) divisor)]
+         (set (for [x xs y ys] [x y])))))</code></pre>
+
+<p>Each box must also be combined with the associated gray codes.</p>
+
+<pre><code class="clojure">(defn gray-codes-for-box [gray-codes positions]
+  (apply clojure.set/intersection
+         (map #(nth gray-codes %) positions)))
 
 (defn convert-pairs-to-expressions [kmap pairs]
   [(clojure.set/union
-    (gray-codes-for-box (kmap :x-gray-codes)
-                        (map first pairs))
-    (gray-codes-for-box (kmap :y-gray-codes)
-                        (map second pairs)))
+    (gray-codes-for-box (kmap :x-gray-codes) (map first pairs))
+    (gray-codes-for-box (kmap :y-gray-codes) (map second pairs)))
    (set (map (fn [[x y]] (nth (nth (kmap :grid)
                                    y) x))
              pairs))])
 
 (defn boxes-sized [kmap size]
   (set (map #(convert-pairs-to-expressions kmap %)
-            (rectangle-coordinates kmap size))))
+            (rectangle-coordinates kmap size))))</code></pre>
 
-(defn identify-simplifications [kmap]
+<p>Finally, those boxes are reduced down to only those which are valid simplifications of the original rules.</p>
+
+<pre><code class="clojure">(defn identify-simplifications [kmap]
   (map (fn [size] (->> (boxes-sized kmap size)
                        (filter #(not (get-in % [1 0])))
                        (map first)))
        [8 4 2 1]))</code></pre>
 
 <h3>Prune Duplicates</h3>
+
+<p>There is a lot of overlap between candidate simplifications. Each superfluous box is either subsumed by a larger box or completely covered by some other combination of boxes. The former will be determined first, so that fewer candidates must be considered in the more complex algorithm required for the latter.</p>
+
 <pre><code class="clojure">(defn already-fulfilled? [existing-conditions new-condition]
   (not (some (fn [existing]
                (every? new-condition existing))
@@ -112,17 +123,32 @@ expressions.  They will be provided in the following form:</p>
   (set (reduce (fn [existing-conditions new-conditions]
                  (into existing-conditions
                        (filter #(already-fulfilled? existing-conditions %) new-conditions)))
-               simplified-conditions)))
+               simplified-conditions)))</code></pre>
 
-(defn identify-condition-coverage [full-conditions simplified-conditions]
+</code></pre>
+
+<p>Identifying rules subsumed by others is more complicated. This is accomplished by tracking all of the rules that cover a true value in the grid, then systematically removing any that do not cover an original rule exclusively. The coverage information must be updated after each removal, otherwise a series of overlapping pairs could be completely removed.</p>
+
+<pre><code class="clojure">(defn identify-condition-coverage [full-conditions simplified-conditions]
   (into {} (map (fn [condition]
-                  [condition (filter #(every? condition %)
-                                     simplified-conditions)])
+                  [condition (set (filter #(every? condition %)
+                                          simplified-conditions))])
                 full-conditions)))
 
+(defn necessary-condition? [coverage candidate]
+  (some #(and (= 1 (count %)) (% candidate)) (vals coverage)))
+
+(defn remove-from-coverage [coverage candidate]
+  (into {} (map (fn [[original-rule covering-rules]]
+                  [original-rule (disj covering-rules candidate)])
+                coverage)))
+
 (defn prune-duplicates [full-conditions simplified-conditions]
-  (->> (prune-fulfilled simplified-conditions)
-       (identify-condition-coverage full-conditions)
-       (filter #(= (count (val %)) 1))
-       (mapcat val)
-       set))</code></pre>
+  (let [pruned-conditions (prune-fulfilled simplified-conditions)
+        condition-coverage (identify-condition-coverage full-conditions pruned-conditions)]
+    (second (reduce (fn [[coverage necessary] candidate]
+                      (if (necessary-condition? coverage candidate)
+                        [coverage (conj necessary candidate)]
+                        [(remove-from-coverage coverage candidate) necessary]))
+                    [condition-coverage #{}]
+                    pruned-conditions))))</code></pre>
