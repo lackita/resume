@@ -1,12 +1,12 @@
+<h2>Background</h2>
+
 <p><a href="https://github.com/cognitect/transit-format">Transit</a> is a format layered on top of JSON and MessagePack, which provides richer types some simple compression for repeated values. There are implementations in several languages, so interacting with these will immediately become easier when adding a new language. My current company works primarily in Perl, so I decided to put an implementation up on <a href="https://metacpan.org/pod/Data::Transit">CPAN</a>.</p>
 
+<h2>Reader Implementation</h2>
+
+<p>There were a couple design tradeoffs that needed to be made while building this library. The first is that Transit allows for different types to be hash keys, but perl uses strings exclusively there. The second is that many native types have CPAN libraries but are not in core perl.</p>
+
 <pre><code class="perl">package Data::Transit::Reader;
-use strict;
-use warnings;
-no warnings 'uninitialized';
-
-our $VERSION = '0.8.01';
-
 use JSON;
 
 sub new {
