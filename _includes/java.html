@@ -1,14 +1,14 @@
 <h2>Background</h2>
 
-<p>In building a <a href="https://github.com/lackita/ZombieSimulator">program to simulate a zombie invasion</a>, collision detection presented an interesting problem when working with large numbers of humans and zombies, which are represented by black and green dots respectively.</p>
+<p>In building a <a href="https://github.com/lackita/ZombieSimulator">program to simulate a zombie invasion</a>, collision detection presented an interesting problem when working with large numbers of humans and zombies, represented by black and green dots respectively.</p>
 
-<p>Detecting collisions between two dots is straightforward, the challenge occurs when there are large numbers of dots. Using brute force to detect collisions of dots in a plane is \(O(n^2)\), so something more efficient is necessary.</p>
+<p>Detecting collisions between two dots is straightforward, but large numbers of dots become challenging. Using brute force to detect collisions of dots in a plane is \(O(n^2)\), so something more efficient is necessary.</p>
 
 <h2>Solution</h2>
 
 <p>If the dots were discrete, then a HashMap would be a natural choice, so the solution involves translating the plane into discrete components. By dividing the plane into squares sized similar to the dots, a collection can be associated with each square containing every dot contained by that square. Since dots in this situation cannot overlap there can be at most 4 dots partially covered by any one square. This constrains the number of collisions to consider down to a constant number, so all of the collisions can be identified in \(O(n)\) time.</p>
 
-<p>The dots themselves are responsible for testing for overlap with another dot, as well as producing which squares it covers.</p>
+<p>The dots have two responsibilities: testing for overlap with another dot and producing which squares it covers.</p>
 
 <pre><code class="java">public class Dot {
     private Point center;
@@ -27,13 +27,13 @@
 	return radius;
     }</code></pre>
 
-<p>Actual overlap detection between two dots is simply checking if the distance between centers exceeds the sum of the two radii.</p>
+<p>Two dots overlap if the distance between centers does not exceed the sum of the two radii.</p>
 
 <pre><code class="java">    public boolean overlaps(Dot other_dot) {
 	return center.distance(other_dot.get_center()) < radius + other_dot.get_radius();
     }</code></pre>
 
-<p>Instead of building a separate object for squares, these will just be represented by a point describing the top left corner. Actually calculating these corners is a little more complicated than overlap detection, but the code itself is straight-forward.</p>
+<p>Instead of building a separate object for squares, they are represented by a point describing the top left corner. Calculating these corners is a little more involved, marking a point every 10 units and truncating to the nearest tens place.</p>
 
 <pre><code class="java">    public HashSet<Point> square_corners_covering() {
 	HashSet<Point> corners = new HashSet<Point>();
@@ -77,7 +77,7 @@
 	return dots.iterator();
     }</code></pre>
 
-<p>Identifying the collections associated with each square is simply looking them up in the grid, adding empty ones if they don't exist.</p>
+<p>Looking the collections associated with each square up in the grid, adding empty ones if they don't exist.</p>
 
 <pre><code class="java">    public HashSet<Dot> dots_within(Dot dot) {
 	HashSet<Dot> all_dots = new HashSet<Dot>();
@@ -101,7 +101,7 @@
 	if (!grid.containsKey(corner)) grid.put(corner, new HashSet<Dot>());
     }</code></pre>
 
-<p>Adding dots to the grid is then accomplished by adding the provided dot to every covered square.</p>
+<p>Adding the provided dot to the master record of all dots and every covered square.</p>
 
 <pre><code class="java">    public void add(Dot dot) {
 	dots.add(dot);
@@ -109,7 +109,7 @@
 	    covered_square.add(dot);
     }</code></pre>
 
-<p>Now, to determine which dots have collided, just those dots within covered squares need be considered.</p>
+<p>To determine which dots have collided, just those dots within covered squares need be considered.</p>
 
 <pre><code class="java">    public Collection<Dot> get_collisions(Dot d) {
 	ArrayList<Dot> collisions = new ArrayList<Dot>();
