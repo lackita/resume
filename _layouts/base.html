@@ -34,8 +34,8 @@
 								{% endfor %}
 							</ul>
 						</li>
-						<li class="active"><a href="{{ page.path }}index.html">Resume <span href="Colin_Williams.pdf" class="print glyphicon glyphicon-print"></span></a></li>
-						<li><a href="{{ page.path }}portfolio">Portfolio</a></li>
+						<li{% if page.layout == "resume" %} class="active"{% endif %}><a href="{{ page.path }}index.html">Resume <span href="Colin_Williams.pdf" class="print glyphicon glyphicon-print"></span></a></li>
+						<li{% if page.layout == "portfolio" %} class="active"{% endif %}><a href="{{ page.path }}portfolio">Portfolio</a></li>
 					</ul>
 				</div>
 			</div>
