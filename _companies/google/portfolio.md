@@ -1,4 +1,4 @@
 ---
 layout: portfolio
-path: /google
+href-path: /google
 ---
