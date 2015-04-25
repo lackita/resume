@@ -1,8 +1,23 @@
-<pre><code class="ruby">require 'taglib'
+<h2>Background</h2>
 
-class Chapter < ActiveRecord::Base
+<p>I read to my wife every night before bed, but occasionally I'm unable to for some reason. On those nights a recording of a previous night is used instead. <a href="https://github.com/lackita/ReadToMe">Read To Me</a> is a rails site for organizing these recordings.</a></p>
+
+<h2>Implementation</h2>
+
+<p>File management is done using the paperclip gem, which provides a has_attached_file function:</p>
+
+<pre><code class="ruby">class Chapter < ActiveRecord::Base
   belongs_to :book
   has_attached_file :track
+end</code></pre>
+
+<h3>Track Length</h3>
+
+<p>Pulling metadata out of the mp3s is done with taglib-ruby:</p>
+
+<pre><code class="ruby">require 'taglib'
+
+class Chapter
   after_find :update_audio_metadata
 
   def update_audio_metadata
