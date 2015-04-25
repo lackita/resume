@@ -9,6 +9,7 @@
 		<link rel="stylesheet" href="/resources/highlight.css">
 		<script src="/resources/highlight.pack.js"></script>
 		<script>hljs.initHighlightingOnLoad();</script>
+		<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 	</head>
 	<body>
 		<nav class="navbar navbar-fixed-top navbar-default">
@@ -41,7 +42,8 @@
 								
 							</ul>
 						</li>
-						<li class="active"><a href="#">Resume <span href="Colin_Williams.pdf" class="print glyphicon glyphicon-print"></span></a></li>
+						<li><a href="/">Resume <span href="Colin_Williams.pdf" class="print glyphicon glyphicon-print"></span></a></li>
+						<li class="active"><a href="/portfolio">Portfolio</a></li>
 					</ul>
 				</div>
 			</div>
@@ -61,22 +63,73 @@
 
 				<div class="tab-content">
 					<div role="tabpanel" class="tab-pane active" id="java">
-						<pre><code class="java">package name.colinwilliams.dotcollision;
+						<h2>Background</h2>
 
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+<p>In building a <a href="https://github.com/lackita/ZombieSimulator">program to simulate a zombie invasion</a>, collision detection presented an interesting problem when working with large numbers of humans and zombies, represented by black and green dots respectively.</p>
 
-/* Being able to quickly look up dots proximity is a challenge.
- * An ArrayList would require O(n), but a hash lookup is difficult
- * because it works with discrete values.  To make this possible, we'll
- * divide the field into squares the same size as the dots, tracking all
- * of the dots that have any part in the square.  This limits lookup by
- * only having to consider dots that share a square. */
-public class DotCollider implements Iterable<Dot> {
+<p>Detecting collisions between two dots is straightforward, but large numbers of dots become challenging. Using brute force to detect collisions of dots in a plane is \(O(n^2)\), so something more efficient is necessary.</p>
+
+<h2>Solution</h2>
+
+<p>If the dots were discrete, then a HashMap would be a natural choice, so the solution involves translating the plane into discrete components. By dividing the plane into squares sized similar to the dots, a collection can be associated with each square containing every dot contained by that square. Since dots in this situation cannot overlap there can be at most 4 dots partially covered by any one square. This constrains the number of collisions to consider down to a constant number, so all of the collisions can be identified in \(O(n)\) time.</p>
+
+<p>The dots have two responsibilities: testing for overlap with another dot and producing which squares it covers.</p>
+
+<pre><code class="java">public class Dot {
+    private Point center;
+    private int radius;
+
+    public Dot(Point center, int radius) {
+	this.center = center;
+	this.radius = radius;
+    }
+
+    public Point get_center() {
+	return center;
+    }
+    
+    public int get_radius() {
+	return radius;
+    }</code></pre>
+
+<p>Two dots overlap if the distance between centers does not exceed the sum of the two radii.</p>
+
+<pre><code class="java">    public boolean overlaps(Dot other_dot) {
+	return center.distance(other_dot.get_center()) < radius + other_dot.get_radius();
+    }</code></pre>
+
+<p>Instead of building a separate object for squares, they are represented by a point describing the top left corner. Calculating these corners is a little more involved, marking a point every 10 units and truncating to the nearest tens place.</p>
+
+<pre><code class="java">    public HashSet<Point> square_corners_covering() {
+	HashSet<Point> corners = new HashSet<Point>();
+	Point top_left_corner = calculate_containing_square_corner(new Point(center.x - radius, center.y - radius));
+	for (int x = top_left_corner.x;x <= center.x + radius;x += 10) {
+	    for (int y = top_left_corner.y;y <= center.y + radius;y += 10) {
+		corners.add(square_corner_containing(new Point(x, y)));
+	    }
+	}
+	
+	return corners;
+    }
+
+    private Point calculate_containing_square_corner(Point point) {
+	return new Point(point.x - Math.abs(point.x % 10), point.y - Math.abs(point.y % 10));
+    }
+
+    private Point square_corner_containing(Point p) {
+	Point square_corner = new Point(p.x, p.y);
+	if (p.x < 0 && p.x % 10 != 0) square_corner.x -= 10;
+	if (p.y < 0 && p.y % 10 != 0) square_corner.y -= 10;
+	square_corner.x += Math.abs(square_corner.x % 10);
+	square_corner.y += Math.abs(square_corner.y % 10);
+	
+	return square_corner;
+    }
+}</code></pre>
+
+<p>With the dot class in place, the class that actually identifies collisions can be built. </p>
+
+<pre><code class="java">public class DotCollider implements Iterable<Dot> {
     private HashSet<Dot> dots;
     private HashMap<Point, HashSet<Dot>> grid;
     public DotCollider() {
@@ -87,28 +140,17 @@ public class DotCollider implements Iterable<Dot> {
     @Override
     public Iterator<Dot> iterator() {
 	return dots.iterator();
-    }
+    }</code></pre>
 
-    public void add(Dot dot) {
-	dots.add(dot);
-	for (HashSet<Dot> covered_square : covered_squares(dot))
-	    covered_square.add(dot);
-    }
+<p>Looking the collections associated with each square up in the grid, adding empty ones if they don't exist.</p>
 
-    public HashSet<Dot> dots_within(Dot dot) {
+<pre><code class="java">    public HashSet<Dot> dots_within(Dot dot) {
 	HashSet<Dot> all_dots = new HashSet<Dot>();
 	for (HashSet<Dot> dots_within_square : covered_squares(dot))
 	    for (Dot overlap_candidate : dots_within_square)
 		if (dot.overlaps(overlap_candidate))
 		    all_dots.add(overlap_candidate);
 	return all_dots;
-    }
-
-    public void update_location(Dot dot) {
-	for (Point grid_box_corner : dot.previous_dot().square_corners_covering()) {
-	    if (grid.containsKey(grid_box_corner)) grid.get(grid_box_corner).remove(dot);
-	}
-	add(dot);
     }
 
     private ArrayList<HashSet<Dot>> covered_squares(Dot dot) {
@@ -122,9 +164,19 @@ public class DotCollider implements Iterable<Dot> {
 
     private void ensure_corner_exists(ArrayList<HashSet<Dot>> result, Point corner) {
 	if (!grid.containsKey(corner)) grid.put(corner, new HashSet<Dot>());
-    }
+    }</code></pre>
 
-    public Collection<Dot> get_collisions(Dot d) {
+<p>Adding the provided dot to the master record of all dots and every covered square.</p>
+
+<pre><code class="java">    public void add(Dot dot) {
+	dots.add(dot);
+	for (HashSet<Dot> covered_square : covered_squares(dot))
+	    covered_square.add(dot);
+    }</code></pre>
+
+<p>To determine which dots have collided, just those dots within covered squares need be considered.</p>
+
+<pre><code class="java">    public Collection<Dot> get_collisions(Dot d) {
 	ArrayList<Dot> collisions = new ArrayList<Dot>();
 	for (Dot collided : dots_within(d)) {
 	    if (d != collided)
@@ -136,7 +188,7 @@ public class DotCollider implements Iterable<Dot> {
 
 					</div>
 					<div role="tabpanel" class="tab-pane" id="clojure">
-						<h1>Problem</h1>
+						<h2>Problem</h2>
 <p><a href="http://www.4clojure.com/problem/140">Problem #140</a> on <a href="http://4clojure.org">4clojure.org</a> asks to build a Karnaugh Map to simplify provided boolean
 expressions.  They will be provided in the following form:</p>
 
@@ -151,7 +203,7 @@ expressions.  They will be provided in the following form:</p>
 
 <p>Where each set is a rule, uppercase letters represent true and lowercase false.</p>
 
-<h1>Solution</h1>
+<h2>Solution</h2>
 <p>There are three basic components to the problem:</p>
 <ul>
   <li>Build a data structure representing the Karnaugh Map for the rules.</li>
@@ -293,40 +345,29 @@ expressions.  They will be provided in the following form:</p>
 
 					</div>
 					<div role="tabpanel" class="tab-pane" id="python">
-						<pre><code class="python">import unittest
+						<h2>Problem</h2>
 
-class UlamTest(unittest.TestCase):
-    def test_precomputed(self):
-        u = U(5)
-        for (k, x) in [(1, 2), (2, 5), (3, 7), (4, 9), (5, 11), (6, 12), (7, 13), (8, 15), (9, 19), (10, 23), (11, 27), (12, 29)]:
-            self.assertEquals(u.compute(k), x)
+<p><a href="https://projecteuler.net/problem=167">Problem 167</a> on <a href="https://projecteuler.net">Project Euler</a> works with Ulam numbers, also referred to as 1-additive sequences in several mathematical papers. Reproducing the problem statement here:</p>
 
-    def test_period(self):
-        for n in range(2, 5):
-            v = 2*n + 1
-            u = U(v)
-            p = Period(u, 100)
-            ks = [500*x + 500 for x in range(1, 20)]
-            ks.append(p.period_start + 1)
-            for k in ks:
-                self.assertEquals(u.compute(k), p.compute(k), "v: " + str(v) + " k: " + str(k))
+<p>For two positive integers a and b, the Ulam sequence \(U(a,b)\) is defined by \(U(a,b)_1 = a\), \(U(a,b)_2 = b\) and for \(k > 2\), \(U(a,b)_k\) is the smallest integer greater than \(U(a,b)_{k-1}\) which can be written in exactly one way as the sum of two distinct previous members of \(U(a,b)\).</p>
 
-    def test_large_values(self):
-        self.assertEquals(Period(U(5), 100).compute(10**11), 393749999981)
-        self.assertEquals(Period(U(7), 100).compute(10**11), 484615384605)
-        self.assertEquals(Period(U(9), 100).compute(10**11), 400450450395)
-        self.assertEquals(Period(U(11), 100).compute(10**11), 399877149781)
-        self.assertEquals(Period(U(13), 100).compute(10**11), 399966136001)
-        self.assertEquals(Period(U(15), 100).compute(10**11), 637499999951)
-        self.assertEquals(Period(U(17), 100).compute(10**11), 400001574629)
-        self.assertEquals(Period(U(19), 100).compute(10**11), 399999473477)
-        self.assertEquals(Period(U(21), 100).compute(10**11), 399999900065)
+<p>For example, the sequence \(U(1,2)\) begins with</p>
+$$1, 2, 3 = 1 + 2, 4 = 1 + 3, 6 = 2 + 4, 8 = 2 + 6, 11 = 3 + 8;$$
+<p>5 does not belong to it because \(5 = 1 + 4 = 2 + 3\) has two representations as the sum of two previous members, likewise \(7 = 1 + 6 = 3 + 4\).</p>
 
-if __name__ == '__main__':
-    unittest.main()
+<p>Find \(\sum_{n=2}^10 U(2,2n+1)_k\), where \(k = 10^11\).</p>
 
+<h2>Solution</h2>
 
-from Queue import PriorityQueue
+<p>The first thing to note is that all of the sequences in the summation have precisely two even numbers: \(2\) and \(4n + 4\). This is proven <a href="http://ac.els-cdn.com/0097316594900582/1-s2.0-0097316594900582-main.pdf?_tid=6ef7d52c-e6b1-11e4-8580-00000aab0f02&acdnat=1429461227_c08cbfd1b42b6e2b8d5e660fd9262e32">here</a>, so the property can be relied upon to hold true well into larger values.</p>
+<p>Additionally, it is proven <a href="http://www.mathstat.dal.ca/FQ/Scanned/29-3/finch.pdf">here</a> that any 1-additive sequence with finitely even terms is eventually regular. A sequence is regular if successive differences repeat.</p>
+<p>These properties lead to a two-phase solution. Compute enough values to determine a repeating period, using the period size and cumulative difference to compute the value for \(k=10^11\).</p>
+
+<h3>Calculating Sample Values</h3>
+
+<p>Because there are only two even values in the sequence, one of these two values must be a component in the sum of every odd number. Whenever a new odd value is computed for a sequence, it introduces two candidates into the pool of potential values, which are stored into a priority queue. The next value in the sequence can then be determined by pulling values out of the queue until a non-repeating entry is found.</p>
+
+<pre><code class="python">from Queue import PriorityQueue
 
 class U(object):
     def __init__(self, v):
@@ -348,20 +389,13 @@ class U(object):
                 if candidate % 2 == 1:
                     self.candidates.put(2 + candidate)
                     self.candidates.put(2*self.computed[1] + 2 + candidate)
-        return self.computed[k - 1]
+        return self.computed[k - 1]</code></pre>
 
+<h3>Determining Period</h3>
 
-class UTest(unittest.TestCase):
-    def test_precomputed(self):
-        u = U(5)
-        for (k, x) in [(1, 2), (2, 5), (3, 7), (4, 9), (5, 11), (6, 12), (7, 13), (8, 15), (9, 19), (10, 23), (11, 27), (12, 29)]:
-            self.assertEquals(u.compute(k), x)
+<p>With a fast way of directly computing values, enough can be generated to determine a period. This is accomplished with a lazily-evaluated sequence of differences, checking increasingly large period sizes until one is found that repeats.</p>
 
-if __name__ == '__main__':
-    unittest.main()
-
-
-class Period(object):
+<pre><code class="python">class Period(object):
     def __init__(self, u, period_start):
         self.period_start = period_start
         self.minimum_period = 20
@@ -396,9 +430,13 @@ class Period(object):
             return self.u.compute(k)
         fundamental_difference = sum(self.period)
         base = self.u.compute(self.period_start) + fundamental_difference*((k - self.period_start)/len(self.period))
-        return base + sum(self.period[0:(k - self.period_start)%len(self.period)])
+        return base + sum(self.period[0:(k - self.period_start)%len(self.period)])</code></pre>
 
-result = 0
+<h3>Compute Answer</h3>
+
+<p>Now it's possible to compute the final answer, which takes about two minutes, most of which is spent computing the period in the last couple iterations. The intermediate values are printed so they can be copied to unit tests used during algorithm refinement.</p>
+
+<pre><code class="python">result = 0
 for n in range(2, 11):
     v = 2*n + 1
     u = U(v)
@@ -411,11 +449,26 @@ print result</code></pre>
 
 					</div>
 					<div role="tabpanel" class="tab-pane" id="ruby">
-						<pre><code class="ruby">require 'taglib'
+						<h2>Background</h2>
 
-class Chapter < ActiveRecord::Base
+<p>I read to my wife every night before bed, but occasionally I'm unable to for some reason. On those nights a recording of a previous night is used instead. <a href="https://github.com/lackita/ReadToMe">Read To Me</a> is a rails site for organizing these recordings.</a></p>
+
+<h2>Implementation</h2>
+
+<p>File management is done using the paperclip gem, which provides a has_attached_file function:</p>
+
+<pre><code class="ruby">class Chapter < ActiveRecord::Base
   belongs_to :book
   has_attached_file :track
+end</code></pre>
+
+<h3>Track Length</h3>
+
+<p>Pulling metadata out of the mp3s is done with taglib-ruby:</p>
+
+<pre><code class="ruby">require 'taglib'
+
+class Chapter
   after_find :update_audio_metadata
 
   def update_audio_metadata
@@ -433,13 +486,19 @@ end</code></pre>
 
 					</div>
 					<div role="tabpanel" class="tab-pane" id="perl">
-						<pre><code class="perl">package Data::Transit::Reader;
-use strict;
-use warnings;
-no warnings 'uninitialized';
+						<h2>Background</h2>
 
-our $VERSION = '0.8.01';
+<p><a href="https://github.com/cognitect/transit-format">Transit</a> is a format layered on top of JSON and MessagePack, which provides richer types some simple compression for repeated values. There are implementations in several languages, so interacting with these will immediately become easier when adding a new language. My current company works primarily in Perl, so I decided to put an implementation up on <a href="https://metacpan.org/pod/Data::Transit">CPAN</a>.</p>
 
+<h2>Reader Implementation</h2>
+
+<p>There were a couple design tradeoffs that needed to be made while building this library. A core philosophy that guided decisions on these issues was preferring the needs of the many over completeness.</p>
+
+<p>Booleans as hash keys was the first problem, as perl's truthiness is based on 0 and 1. When used as keys to a hash, this causes a collision if both true and 1 are read. The Python implementation addressed this problem by creating Transit-specific types for booleans, but perl only allows strings as hash keys. Rather than introduce some encoding into the strings to disambiguate, this implementation chose to accept the possibility of a collision in exchange for resulting data that is a more natural part of the target language.</p>
+
+<p>The second problem is that many built-in Transit types have CPAN libraries but are not in core perl. If the types were included in the core library, it would introduce unnecessary dependencies for several people. Instead, the core library was kept simple and extension libraries will be added as dictated by demand. This provided the dual benefits of reduced dependencies and keeping the core codebase simpler.</p>
+
+<pre><code class="perl">package Data::Transit::Reader;
 use JSON;
 
 sub new {

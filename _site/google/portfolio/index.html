@@ -1,0 +1,576 @@
+<html>
+	<head>
+		<title>Colin Williams - Resume</title>
+		<script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="/resources/styles.css">
+		<link rel="stylesheet" href="/resources/highlight.css">
+		<script src="/resources/highlight.pack.js"></script>
+		<script>hljs.initHighlightingOnLoad();</script>
+		<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	</head>
+	<body>
+		<nav class="navbar navbar-fixed-top navbar-default">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#header">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="#"><b class="text-primary">Colin Williams</b></a>
+				</div>
+
+				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav">
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Contact <span class="caret"></span></a>
+							<ul class="dropdown-menu" role="menu">
+								
+									<li><a href="mailto:colin@colinwilliams.name"><b>Email</b> <span class="contact">colin@colinwilliams.name</span></a></li>
+								
+									<li><a href="http://resume.colinwilliams.name/"><b>Resume</b> <span class="contact">resume.colinwilliams.name</span></a></li>
+								
+									<li><a href="http://blog.colinwilliams.name/"><b>Blog</b> <span class="contact">blog.colinwilliams.name</span></a></li>
+								
+									<li><a href="https://github.com/lackita"><b>GitHub</b> <span class="contact">lackita</span></a></li>
+								
+									<li><a href="https://twitter.com/lackita101"><b>Twitter</b> <span class="contact">@lackita101</span></a></li>
+								
+							</ul>
+						</li>
+						<li><a href="/google/">Resume <span href="Colin_Williams.pdf" class="print glyphicon glyphicon-print"></span></a></li>
+						<li class="active"><a href="/google/portfolio">Portfolio</a></li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container">
+	<div class="row">
+		<div class="col-xs-12">
+			<div role="tabpanel">
+				<ul class="nav nav-tabs" role="tablist">
+					<li role="presentation" class="active"><a href="#java" role="tab" data-toggle="tab">Java</a></li>
+					<li role="presentation"><a href="#clojure" role="tab" data-toggle="tab">Clojure</a></li>
+					<li role="presentation"><a href="#python" role="tab" data-toggle="tab">Python</a></li>
+					<li role="presentation"><a href="#ruby" role="tab" data-toggle="tab">Ruby</a></li>
+					<li role="presentation"><a href="#perl" role="tab" data-toggle="tab">Perl</a></li>
+				</ul>
+
+				<div class="tab-content">
+					<div role="tabpanel" class="tab-pane active" id="java">
+						<h2>Background</h2>
+
+<p>In building a <a href="https://github.com/lackita/ZombieSimulator">program to simulate a zombie invasion</a>, collision detection presented an interesting problem when working with large numbers of humans and zombies, represented by black and green dots respectively.</p>
+
+<p>Detecting collisions between two dots is straightforward, but large numbers of dots become challenging. Using brute force to detect collisions of dots in a plane is \(O(n^2)\), so something more efficient is necessary.</p>
+
+<h2>Solution</h2>
+
+<p>If the dots were discrete, then a HashMap would be a natural choice, so the solution involves translating the plane into discrete components. By dividing the plane into squares sized similar to the dots, a collection can be associated with each square containing every dot contained by that square. Since dots in this situation cannot overlap there can be at most 4 dots partially covered by any one square. This constrains the number of collisions to consider down to a constant number, so all of the collisions can be identified in \(O(n)\) time.</p>
+
+<p>The dots have two responsibilities: testing for overlap with another dot and producing which squares it covers.</p>
+
+<pre><code class="java">public class Dot {
+    private Point center;
+    private int radius;
+
+    public Dot(Point center, int radius) {
+	this.center = center;
+	this.radius = radius;
+    }
+
+    public Point get_center() {
+	return center;
+    }
+    
+    public int get_radius() {
+	return radius;
+    }</code></pre>
+
+<p>Two dots overlap if the distance between centers does not exceed the sum of the two radii.</p>
+
+<pre><code class="java">    public boolean overlaps(Dot other_dot) {
+	return center.distance(other_dot.get_center()) < radius + other_dot.get_radius();
+    }</code></pre>
+
+<p>Instead of building a separate object for squares, they are represented by a point describing the top left corner. Calculating these corners is a little more involved, marking a point every 10 units and truncating to the nearest tens place.</p>
+
+<pre><code class="java">    public HashSet<Point> square_corners_covering() {
+	HashSet<Point> corners = new HashSet<Point>();
+	Point top_left_corner = calculate_containing_square_corner(new Point(center.x - radius, center.y - radius));
+	for (int x = top_left_corner.x;x <= center.x + radius;x += 10) {
+	    for (int y = top_left_corner.y;y <= center.y + radius;y += 10) {
+		corners.add(square_corner_containing(new Point(x, y)));
+	    }
+	}
+	
+	return corners;
+    }
+
+    private Point calculate_containing_square_corner(Point point) {
+	return new Point(point.x - Math.abs(point.x % 10), point.y - Math.abs(point.y % 10));
+    }
+
+    private Point square_corner_containing(Point p) {
+	Point square_corner = new Point(p.x, p.y);
+	if (p.x < 0 && p.x % 10 != 0) square_corner.x -= 10;
+	if (p.y < 0 && p.y % 10 != 0) square_corner.y -= 10;
+	square_corner.x += Math.abs(square_corner.x % 10);
+	square_corner.y += Math.abs(square_corner.y % 10);
+	
+	return square_corner;
+    }
+}</code></pre>
+
+<p>With the dot class in place, the class that actually identifies collisions can be built. </p>
+
+<pre><code class="java">public class DotCollider implements Iterable<Dot> {
+    private HashSet<Dot> dots;
+    private HashMap<Point, HashSet<Dot>> grid;
+    public DotCollider() {
+	dots = new HashSet<Dot>();
+	grid = new HashMap<Point, HashSet<Dot>>();
+    }
+
+    @Override
+    public Iterator<Dot> iterator() {
+	return dots.iterator();
+    }</code></pre>
+
+<p>Looking the collections associated with each square up in the grid, adding empty ones if they don't exist.</p>
+
+<pre><code class="java">    public HashSet<Dot> dots_within(Dot dot) {
+	HashSet<Dot> all_dots = new HashSet<Dot>();
+	for (HashSet<Dot> dots_within_square : covered_squares(dot))
+	    for (Dot overlap_candidate : dots_within_square)
+		if (dot.overlaps(overlap_candidate))
+		    all_dots.add(overlap_candidate);
+	return all_dots;
+    }
+
+    private ArrayList<HashSet<Dot>> covered_squares(Dot dot) {
+	ArrayList<HashSet<Dot>> result = new ArrayList<HashSet<Dot>>();
+	for (Point corner : dot.square_corners_covering()) {
+	    ensure_corner_exists(result, corner);
+	    result.add(grid.get(corner));
+	}
+	return result;
+    }
+
+    private void ensure_corner_exists(ArrayList<HashSet<Dot>> result, Point corner) {
+	if (!grid.containsKey(corner)) grid.put(corner, new HashSet<Dot>());
+    }</code></pre>
+
+<p>Adding the provided dot to the master record of all dots and every covered square.</p>
+
+<pre><code class="java">    public void add(Dot dot) {
+	dots.add(dot);
+	for (HashSet<Dot> covered_square : covered_squares(dot))
+	    covered_square.add(dot);
+    }</code></pre>
+
+<p>To determine which dots have collided, just those dots within covered squares need be considered.</p>
+
+<pre><code class="java">    public Collection<Dot> get_collisions(Dot d) {
+	ArrayList<Dot> collisions = new ArrayList<Dot>();
+	for (Dot collided : dots_within(d)) {
+	    if (d != collided)
+		collisions.add(collided);
+	}
+	return collisions;
+    }
+}</code></pre>
+
+					</div>
+					<div role="tabpanel" class="tab-pane" id="clojure">
+						<h2>Problem</h2>
+<p><a href="http://www.4clojure.com/problem/140">Problem #140</a> on <a href="http://4clojure.org">4clojure.org</a> asks to build a Karnaugh Map to simplify provided boolean
+expressions.  They will be provided in the following form:</p>
+
+<pre><code class="clojure">#{#{'a 'B 'C 'd}
+  #{'A 'b 'c 'd}
+  #{'A 'b 'c 'D}
+  #{'A 'b 'C 'd}
+  #{'A 'b 'C 'D}
+  #{'A 'B 'c 'd}
+  #{'A 'B 'c 'D}
+  #{'A 'B 'C 'd}}</code></pre>
+
+<p>Where each set is a rule, uppercase letters represent true and lowercase false.</p>
+
+<h2>Solution</h2>
+<p>There are three basic components to the problem:</p>
+<ul>
+  <li>Build a data structure representing the Karnaugh Map for the rules.</li>
+  <li>Determinine the boxes to draw around groups of true entries.</li>
+  <li>Remove superfluous boxes.</li>
+</ul>
+
+<pre><code class="clojure">(defn simplify-rules [conditions]
+  (->> (build-kmap conditions)
+       identify-simplifications
+       (prune-duplicates conditions)))</code></pre>
+
+<h3>Building the K-Map</h3>
+
+<p>To build the K-Map, the variables need to be divided between those appearing in columns and those appearing in rows, which then must be ordered as gray codes.</p>
+
+<pre><code class="clojure">(defn negative [s]
+  (symbol (.toLowerCase (name s))))
+
+(defn positive [s]
+  (symbol (.toUpperCase (name s))))
+
+(defn gray-codes [symbols]
+  (if (empty? symbols) [#{}]
+      (let [varying (first symbols)
+            subsequent-gray-codes (gray-codes (rest symbols))]
+        (concat (map #(conj % (negative varying))
+                     subsequent-gray-codes)
+                (map #(conj % (positive varying))
+                     (reverse subsequent-gray-codes))))))
+
+(defn divide-symbols [symbols]
+  (split-at (Math/ceil (/ (count symbols) 2)) symbols))</code></pre>
+
+<p>With the structure established, the K-Map can be built. This then gets combined with some other information that will be needed elsewhere in the problem.</p>
+
+<pre><code class="clojure">(defn build-grid [conditions x-gray-codes y-gray-codes]
+  (map (fn [y-gray-code]
+         (map #(if (conditions (set (concat % y-gray-code))) 1 0)
+              x-gray-codes)) y-gray-codes))
+
+(defn build-kmap [conditions]
+  (let [[x-gray-codes y-gray-codes] (->> (first conditions)
+                                         (map negative)
+                                         sort
+                                         divide-symbols
+                                         (map gray-codes))
+        grid (build-grid conditions x-gray-codes y-gray-codes)]
+    {:grid grid
+     :x-gray-codes x-gray-codes
+     :y-gray-codes y-gray-codes
+     :width (count (first grid))
+     :height (count grid)}))</code></pre>
+
+<h3>Determine Boxes</h3>
+
+<p>Karnaugh Maps work by identifying rectangles within the grid which only contain true values, for which width and height must be powers of two. Every possible box which meets the dimension requirement is considered, and those meeting this requirement are determined.</p>
+
+<p>To describe each rectangle, a set containing every coordinate pair within the rectangle is produced.</p>
+
+<pre><code class="clojure">(defn cyclic-ranges [distance size]
+  (for [start (range distance)]
+    (take size (drop start (cycle (range distance))))))
+
+(defn rectangle-coordinates [kmap size]
+  (set (for [divisor [1 2 4]
+             xs (cyclic-ranges (kmap :width) (/ size divisor))
+             ys (cyclic-ranges (kmap :height) divisor)]
+         (set (for [x xs y ys] [x y])))))</code></pre>
+
+<p>Each box must also be combined with the associated gray codes.</p>
+
+<pre><code class="clojure">(defn gray-codes-for-box [gray-codes positions]
+  (apply clojure.set/intersection
+         (map #(nth gray-codes %) positions)))
+
+(defn convert-pairs-to-expressions [kmap pairs]
+  [(clojure.set/union
+    (gray-codes-for-box (kmap :x-gray-codes) (map first pairs))
+    (gray-codes-for-box (kmap :y-gray-codes) (map second pairs)))
+   (set (map (fn [[x y]] (nth (nth (kmap :grid)
+                                   y) x))
+             pairs))])
+
+(defn boxes-sized [kmap size]
+  (set (map #(convert-pairs-to-expressions kmap %)
+            (rectangle-coordinates kmap size))))</code></pre>
+
+<p>Finally, those boxes are reduced down to only those which are valid simplifications of the original rules.</p>
+
+<pre><code class="clojure">(defn identify-simplifications [kmap]
+  (map (fn [size] (->> (boxes-sized kmap size)
+                       (filter #(not (get-in % [1 0])))
+                       (map first)))
+       [8 4 2 1]))</code></pre>
+
+<h3>Prune Duplicates</h3>
+
+<p>There is a lot of overlap between candidate simplifications. Each superfluous box is either subsumed by a larger box or completely covered by some other combination of boxes. The former will be determined first, so that fewer candidates must be considered in the more complex algorithm required for the latter.</p>
+
+<pre><code class="clojure">(defn already-fulfilled? [existing-conditions new-condition]
+  (not (some (fn [existing]
+               (every? new-condition existing))
+             existing-conditions)))
+
+(defn prune-fulfilled [simplified-conditions]
+  (set (reduce (fn [existing-conditions new-conditions]
+                 (into existing-conditions
+                       (filter #(already-fulfilled? existing-conditions %) new-conditions)))
+               simplified-conditions)))</code></pre>
+
+</code></pre>
+
+<p>Identifying rules subsumed by others is more complicated. This is accomplished by tracking all of the rules that cover a true value in the grid, then systematically removing any that do not cover an original rule exclusively. The coverage information must be updated after each removal, otherwise a series of overlapping pairs could be completely removed.</p>
+
+<pre><code class="clojure">(defn identify-condition-coverage [full-conditions simplified-conditions]
+  (into {} (map (fn [condition]
+                  [condition (set (filter #(every? condition %)
+                                          simplified-conditions))])
+                full-conditions)))
+
+(defn necessary-condition? [coverage candidate]
+  (some #(and (= 1 (count %)) (% candidate)) (vals coverage)))
+
+(defn remove-from-coverage [coverage candidate]
+  (into {} (map (fn [[original-rule covering-rules]]
+                  [original-rule (disj covering-rules candidate)])
+                coverage)))
+
+(defn prune-duplicates [full-conditions simplified-conditions]
+  (let [pruned-conditions (prune-fulfilled simplified-conditions)
+        condition-coverage (identify-condition-coverage full-conditions pruned-conditions)]
+    (second (reduce (fn [[coverage necessary] candidate]
+                      (if (necessary-condition? coverage candidate)
+                        [coverage (conj necessary candidate)]
+                        [(remove-from-coverage coverage candidate) necessary]))
+                    [condition-coverage #{}]
+                    pruned-conditions))))</code></pre>
+
+					</div>
+					<div role="tabpanel" class="tab-pane" id="python">
+						<h2>Problem</h2>
+
+<p><a href="https://projecteuler.net/problem=167">Problem 167</a> on <a href="https://projecteuler.net">Project Euler</a> works with Ulam numbers, also referred to as 1-additive sequences in several mathematical papers. Reproducing the problem statement here:</p>
+
+<p>For two positive integers a and b, the Ulam sequence \(U(a,b)\) is defined by \(U(a,b)_1 = a\), \(U(a,b)_2 = b\) and for \(k > 2\), \(U(a,b)_k\) is the smallest integer greater than \(U(a,b)_{k-1}\) which can be written in exactly one way as the sum of two distinct previous members of \(U(a,b)\).</p>
+
+<p>For example, the sequence \(U(1,2)\) begins with</p>
+$$1, 2, 3 = 1 + 2, 4 = 1 + 3, 6 = 2 + 4, 8 = 2 + 6, 11 = 3 + 8;$$
+<p>5 does not belong to it because \(5 = 1 + 4 = 2 + 3\) has two representations as the sum of two previous members, likewise \(7 = 1 + 6 = 3 + 4\).</p>
+
+<p>Find \(\sum_{n=2}^10 U(2,2n+1)_k\), where \(k = 10^11\).</p>
+
+<h2>Solution</h2>
+
+<p>The first thing to note is that all of the sequences in the summation have precisely two even numbers: \(2\) and \(4n + 4\). This is proven <a href="http://ac.els-cdn.com/0097316594900582/1-s2.0-0097316594900582-main.pdf?_tid=6ef7d52c-e6b1-11e4-8580-00000aab0f02&acdnat=1429461227_c08cbfd1b42b6e2b8d5e660fd9262e32">here</a>, so the property can be relied upon to hold true well into larger values.</p>
+<p>Additionally, it is proven <a href="http://www.mathstat.dal.ca/FQ/Scanned/29-3/finch.pdf">here</a> that any 1-additive sequence with finitely even terms is eventually regular. A sequence is regular if successive differences repeat.</p>
+<p>These properties lead to a two-phase solution. Compute enough values to determine a repeating period, using the period size and cumulative difference to compute the value for \(k=10^11\).</p>
+
+<h3>Calculating Sample Values</h3>
+
+<p>Because there are only two even values in the sequence, one of these two values must be a component in the sum of every odd number. Whenever a new odd value is computed for a sequence, it introduces two candidates into the pool of potential values, which are stored into a priority queue. The next value in the sequence can then be determined by pulling values out of the queue until a non-repeating entry is found.</p>
+
+<pre><code class="python">from Queue import PriorityQueue
+
+class U(object):
+    def __init__(self, v):
+        self.computed = []
+        self.candidates = PriorityQueue()
+        self.candidates.put(2)
+        self.candidates.put(v)
+        self.candidates.put(2*v + 2)
+
+    def compute(self, k):
+        while len(self.computed) < k:
+            candidate = self.candidates.get()
+            valid = True
+            while not self.candidates.empty() and self.candidates.queue[0] == candidate:
+                valid = False
+                self.candidates.get()
+            if valid:
+                self.computed.append(candidate)
+                if candidate % 2 == 1:
+                    self.candidates.put(2 + candidate)
+                    self.candidates.put(2*self.computed[1] + 2 + candidate)
+        return self.computed[k - 1]</code></pre>
+
+<h3>Determining Period</h3>
+
+<p>With a fast way of directly computing values, enough can be generated to determine a period. This is accomplished with a lazily-evaluated sequence of differences, checking increasingly large period sizes until one is found that repeats.</p>
+
+<pre><code class="python">class Period(object):
+    def __init__(self, u, period_start):
+        self.period_start = period_start
+        self.minimum_period = 20
+        self.diffs = []
+        self.previous = u.compute(period_start)
+        self.u = u
+        self.period = self.compute_period()
+
+    def compute_period(self):
+        period_length = self.minimum_period
+        while not self.verify_period(period_length):
+            period_length += 1
+        return self.diffs[0:period_length]
+
+    def verify_period(self, period_length):
+        i = period_length
+        while i <= 2*period_length:
+            if self.lookup_diff(i) != self.lookup_diff(i % period_length):
+                return False
+            i += 1
+        return True
+
+    def lookup_diff(self, i):
+        while i >= len(self.diffs):
+            s = self.u.compute(self.period_start + 1 + len(self.diffs))
+            self.diffs.append(s - self.previous)
+            self.previous = s
+        return self.diffs[i]
+
+    def compute(self, k):
+        if k <= self.period_start:
+            return self.u.compute(k)
+        fundamental_difference = sum(self.period)
+        base = self.u.compute(self.period_start) + fundamental_difference*((k - self.period_start)/len(self.period))
+        return base + sum(self.period[0:(k - self.period_start)%len(self.period)])</code></pre>
+
+<h3>Compute Answer</h3>
+
+<p>Now it's possible to compute the final answer, which takes about two minutes, most of which is spent computing the period in the last couple iterations. The intermediate values are printed so they can be copied to unit tests used during algorithm refinement.</p>
+
+<pre><code class="python">result = 0
+for n in range(2, 11):
+    v = 2*n + 1
+    u = U(v)
+    period = Period(u, 100)
+    x = period.compute(10**11)
+    print str(v) + ": " + str(x)
+    print len(period.period)
+    result += x
+print result</code></pre>
+
+					</div>
+					<div role="tabpanel" class="tab-pane" id="ruby">
+						<h2>Background</h2>
+
+<p>I read to my wife every night before bed, but occasionally I'm unable to for some reason. On those nights a recording of a previous night is used instead. <a href="https://github.com/lackita/ReadToMe">Read To Me</a> is a rails site for organizing these recordings.</a></p>
+
+<h2>Implementation</h2>
+
+<p>File management is done using the paperclip gem, which provides a has_attached_file function:</p>
+
+<pre><code class="ruby">class Chapter < ActiveRecord::Base
+  belongs_to :book
+  has_attached_file :track
+end</code></pre>
+
+<h3>Track Length</h3>
+
+<p>Pulling metadata out of the mp3s is done with taglib-ruby:</p>
+
+<pre><code class="ruby">require 'taglib'
+
+class Chapter
+  after_find :update_audio_metadata
+
+  def update_audio_metadata
+    if self.track_file_name and not self.track_length
+      TagLib::FileRef.open(track.path) do |mp3|
+        self.track_length = mp3.audio_properties.length / 60
+      end
+    end
+  end
+
+  def displayed_track_length
+    "#{track_length.to_i / 60}:#{(track_length.to_i % 60).to_s.rjust(2, padstr=0.to_s)}"
+  end
+end</code></pre>
+
+					</div>
+					<div role="tabpanel" class="tab-pane" id="perl">
+						<h2>Background</h2>
+
+<p><a href="https://github.com/cognitect/transit-format">Transit</a> is a format layered on top of JSON and MessagePack, which provides richer types some simple compression for repeated values. There are implementations in several languages, so interacting with these will immediately become easier when adding a new language. My current company works primarily in Perl, so I decided to put an implementation up on <a href="https://metacpan.org/pod/Data::Transit">CPAN</a>.</p>
+
+<h2>Reader Implementation</h2>
+
+<p>There were a couple design tradeoffs that needed to be made while building this library. A core philosophy that guided decisions on these issues was preferring the needs of the many over completeness.</p>
+
+<p>Booleans as hash keys was the first problem, as perl's truthiness is based on 0 and 1. When used as keys to a hash, this causes a collision if both true and 1 are read. The Python implementation addressed this problem by creating Transit-specific types for booleans, but perl only allows strings as hash keys. Rather than introduce some encoding into the strings to disambiguate, this implementation chose to accept the possibility of a collision in exchange for resulting data that is a more natural part of the target language.</p>
+
+<p>The second problem is that many built-in Transit types have CPAN libraries but are not in core perl. If the types were included in the core library, it would introduce unnecessary dependencies for several people. Instead, the core library was kept simple and extension libraries will be added as dictated by demand. This provided the dual benefits of reduced dependencies and keeping the core codebase simpler.</p>
+
+<pre><code class="perl">package Data::Transit::Reader;
+use JSON;
+
+sub new {
+	my ($class, %args) = @_;
+	return bless {
+		%args,
+		cache => [],
+		cache_counter => 0,
+	}, $class;
+}
+
+sub read {
+	my ($self, $json) = @_;
+	return $self->_convert($self->_decode($json));
+}
+
+sub _convert_from_cached {
+	my ($self, $data) = @_;
+	return $self->_convert($self->_cache($data, 1));
+}
+
+sub _cache {
+	my ($self, $data, $cacheable) = @_;
+	return $self->{cache}[$1] if $data =~ /^\^(\d+)$/;
+	$self->{cache}->[$self->{cache_counter}++] = $data if length($data) > 3 && $cacheable;
+	return $data;
+}
+
+sub _convert {
+	my ($self, $json) = @_;
+	if (ref($json) eq 'ARRAY') {
+		return $self->_convert($json->[1]) if $json->[0] eq "~#'";
+
+		if ($self->_cache($json->[0], $json->[0] =~ /^~#/) =~ /^~#(.+)$/) {
+			return $self->{handlers}{$1}->fromRep(@$json[1..$#$json]);
+		}
+
+		return $self->_convert_map($json) if $json->[0] eq "^ ";
+		return [map {$self->_convert($_)} @$json];
+	} else {
+		return "" if $json eq "~_";
+		return $json ? 1 : 0 if JSON::is_bool($json);
+		return 1 if $json eq "~?t";
+		return 0 if $json eq "~?f";
+		return $1 if $json =~ /^~.(.+)$/;
+		return $json;
+	}
+}
+
+sub _convert_map {
+	my ($self, $map) = @_;
+	my %map = @$map[1..$#$map];
+	return {map {$self->_convert_from_cached($_) => $self->_convert($map{$_})} keys %map};
+}
+
+1;</code></pre>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+		<script>
+			$(document).ready(function () {
+				$(".print").on("click", function() {
+					window.location.href = "Colin_Williams.pdf";
+					return false;
+				});
+			});
+		</script>
+	</body>
+</html>
