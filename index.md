@@ -1,5 +1,5 @@
 ---
 layout: resume
 data: default
-path: /
+href-path: /
 ---
