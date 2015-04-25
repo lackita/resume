@@ -1,5 +1,5 @@
 ---
 layout: resume
 data: google
-path: /google
+href-path: /google
 ---
