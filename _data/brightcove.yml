@@ -1,4 +1,10 @@
-Summary:
+portfolio:
+  - Ruby
+  - Clojure
+  - Python
+  - Java
+  - Perl
+summary:
   - Founder of CodeFu, the Software Craftsmanship group at athenahealth.
   - Organizer of several <a href="http://coderetreat.org/">coderetreats</a>, events pair programming Conway's Game of Life.
   - Took a short sabbatical to focus on learning Clojure.

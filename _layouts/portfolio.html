@@ -7,28 +7,35 @@ layout: base
 		<div class="col-xs-12">
 			<div role="tabpanel">
 				<ul class="nav nav-tabs" role="tablist">
-					<li role="presentation" class="active"><a href="#java" role="tab" data-toggle="tab">Java</a></li>
-					<li role="presentation"><a href="#clojure" role="tab" data-toggle="tab">Clojure</a></li>
-					<li role="presentation"><a href="#python" role="tab" data-toggle="tab">Python</a></li>
-					<li role="presentation"><a href="#ruby" role="tab" data-toggle="tab">Ruby</a></li>
-					<li role="presentation"><a href="#perl" role="tab" data-toggle="tab">Perl</a></li>
+					{% for sample in site.data[page.data].portfolio %}
+					    <li role="presentation"{% if sample == site.data[page.data].portfolio[0] %} class="active"{% endif %}>
+							<a href="#{{ sample }}" role="tab" data-toggle="tab">
+								{{ sample }}
+							</a>
+						</li>
+					{% endfor %}
 				</ul>
 
 				<div class="tab-content">
-					<div role="tabpanel" class="tab-pane active" id="java">
-						{% include java.html %}
+					{% for sample in site.data[page.data].portfolio %}
+					    <div role="tabpanel" class="tab-pane{% if sample == site.data[page.data].portfolio[0] %} active{% endif %}" id="{{ sample }}">
+							{% include {{ sample }}.html %}
+						</div>
+					{% endfor %}
+					<div role="tabpanel" class="tab-pane active" id="Java">
+						{% include Java.html %}
 					</div>
-					<div role="tabpanel" class="tab-pane" id="clojure">
-						{% include clojure.html %}
+					<div role="tabpanel" class="tab-pane" id="Clojure">
+						{% include Clojure.html %}
 					</div>
-					<div role="tabpanel" class="tab-pane" id="python">
-						{% include python.html %}
+					<div role="tabpanel" class="tab-pane" id="Python">
+						{% include Python.html %}
 					</div>
-					<div role="tabpanel" class="tab-pane" id="ruby">
-						{% include ruby.html %}
+					<div role="tabpanel" class="tab-pane" id="Ruby">
+						{% include Ruby.html %}
 					</div>
-					<div role="tabpanel" class="tab-pane" id="perl">
-						{% include perl.html %}
+					<div role="tabpanel" class="tab-pane" id="Perl">
+						{% include Perl.html %}
 					</div>
 				</div>
 			</div>
