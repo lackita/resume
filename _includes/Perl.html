@@ -4,11 +4,11 @@
 
 <h2>Reader Implementation</h2>
 
-<p>There were a couple design tradeoffs that needed to be made while building this library. A core philosophy that guided decisions on these issues was preferring the needs of the many over completeness.</p>
+<p>There were a couple design trade offs that needed to be made while building this library. A core philosophy that guided decisions on these issues was preferring the needs of the many over completeness.</p>
 
-<p>Booleans as hash keys was the first problem, as perl's truthiness is based on 0 and 1. When used as keys to a hash, this causes a collision if both true and 1 are read. The Python implementation addressed this problem by creating Transit-specific types for booleans, but perl only allows strings as hash keys. Rather than introduce some encoding into the strings to disambiguate, this implementation chose to accept the possibility of a collision in exchange for resulting data that is a more natural part of the target language.</p>
+<p>Booleans as hash keys was the first problem, as Perl's truthiness is based on 0 and 1. When used as keys to a hash, this causes a collision if both true and 1 are read. The Python implementation addressed this problem by creating Transit-specific types for booleans, but Perl only allows strings as hash keys. Rather than introduce some encoding into the strings to disambiguate, this implementation chose to accept the possibility of a collision in exchange for resulting data that is a more natural part of the target language.</p>
 
-<p>The second problem is that many built-in Transit types have CPAN libraries but are not in core perl. If the types were included in the core library, it would introduce unnecessary dependencies for several people. Instead, the core library was kept simple and extension libraries will be added as dictated by demand. This provided the dual benefits of reduced dependencies and keeping the core codebase simpler.</p>
+<p>The second problem is that many built-in Transit types have CPAN libraries but are not in core Perl. If the types were included in the core library, it would introduce unnecessary dependencies for several people. Instead, the core library was kept simple and extension libraries will be added as dictated by demand. This provided the dual benefits of reduced dependencies and keeping the core codebase simpler.</p>
 
 <pre><code class="perl">package Data::Transit::Reader;
 use JSON;

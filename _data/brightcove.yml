@@ -14,7 +14,7 @@ summary:
 experience:
   athenahealth:
     subsystems:
-      - Divided over 2 million lines of perl code into 30+ business domains.
+      - Divided over 2 million lines of Perl code into 30+ business domains.
       - Redesigned intranet site based on feedback gathered from users.
     qaqueue:
       - Led a team of developers working on automated testing and release deployment.
