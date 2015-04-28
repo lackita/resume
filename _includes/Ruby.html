@@ -1,34 +1,237 @@
-<h2>Background</h2>
+<h2>Problem</h2>
 
-<p>I read to my wife every night before bed, but occasionally I'm unable to for some reason. On those nights a recording of a previous night is used instead. <a href="https://github.com/lackita/ReadToMe">Read To Me</a> is a rails site for organizing these recordings.</a></p>
+<p><a href="https://projecteuler.net/problem=244">Problem 244</a> on <a href="https://projecteuler.net">Project Euler</a> is a modified breadth first search. Reproduction of the problem statement:</p>
 
-<h2>Implementation</h2>
+<p>You probably know the game Fifteen Puzzle. Here, instead of numbered tiles, we have seven red tiles and eight blue tiles.</p>
 
-<p>File management is done using the paperclip gem, which provides a has_attached_file function:</p>
+<p>A move is denoted by the uppercase initial of the direction (Left, Right, Up, Down) in which the tile is slid, e.g. starting from configuration (S), by the sequence LULUR we reach the configuration (E):</p>
 
-<pre><code class="ruby">class Chapter < ActiveRecord::Base
-  belongs_to :book
-  has_attached_file :track
-end</code></pre>
+<p>(S) <img src="https://projecteuler.net/project/images/p244_start.gif">, (E) <img src="https://projecteuler.net/project/images/p244_example.gif"></p>
 
-<h3>Track Length</h3>
+<p>For each path, its checksum is calculated by (pseudocode):</p>
 
-<p>Pulling metadata out of the mp3s is done with taglib-ruby:</p>
+$$checksum = 0$$
+$$checksum = (checksum × 243 + m1) mod 100 000 007$$
+$$checksum = (checksum × 243 + m2) mod 100 000 007$$
+$$...$$
+$$checksum = (checksum × 243 + mn) mod 100 000 007$$
 
-<pre><code class="ruby">require 'taglib'
+<p>where mk is the ASCII value of the kth letter in the move sequence and the ASCII values for the moves are:</p>
 
-class Chapter
-  after_find :update_audio_metadata
+<ul>
+	<li>L: 76</li>
+	<li>R: 82</li>
+	<li>U: 85</li>
+	<li>D: 68</li>
+</ul>
 
-  def update_audio_metadata
-    if self.track_file_name and not self.track_length
-      TagLib::FileRef.open(track.path) do |mp3|
-        self.track_length = mp3.audio_properties.length / 60
+<p>For the sequence LULUR given above, the checksum would be 19761398.</p>
+
+<p>Now, starting from configuration (S), find all shortest ways to reach configuration (T).</p>
+
+<p>(S) <img src="https://projecteuler.net/project/images/p244_start.gif">, (T) <img src="https://projecteuler.net/project/images/p244_target.gif"></p>
+
+<p>What is the sum of all checksums for the paths having the minimal length?</p>
+
+<h2>Solution</h2>
+
+<p>This problem can be represented as a directed graph, in which the nodes are the various board positions and edges represent a move that can be made to reach that node.</p>
+
+<p>To avoid generating too much of the graph, the adjacency list is lazily evaluated. The BFS will regenerate some nodes, but experimentation with memoization did not yield a noticeable improvement in performance.</p>
+
+<pre><code class="ruby">class Node
+  attr_reader :position
+
+  def initialize(position)
+    @position = position
+  end
+
+  def open_slot
+    @open_slot ||= begin
+      @position.each_index do |row|
+        @position[row].each_index do |col|
+          if @position[row][col] == " "
+            return {row: row, col: col}
+          end
+        end
       end
     end
   end
 
-  def displayed_track_length
-    "#{track_length.to_i / 60}:#{(track_length.to_i % 60).to_s.rjust(2, padstr=0.to_s)}"
+  def edges
+    edges = []
+
+    if open_slot[:col] > 0
+      edges.push(Edge.new(self, "R"))
+    end
+
+    if open_slot[:col] < last_col
+      edges.push(Edge.new(self, "L"))
+    end
+
+    if open_slot[:row] > 0
+      edges.push(Edge.new(self, "D"))
+    end
+
+    if open_slot[:row] < last_row
+      edges.push(Edge.new(self, "U"))
+    end
+
+    edges
+  end
+
+  def last_row
+    @position.length - 1
+  end
+
+  def last_col
+    @position[0].length - 1
+  end
+
+  def ==(other_node)
+    @position == other_node.position
+  end
+
+  def to_s
+    @position.map { |row| row.join("") }.join("\n")
+  end
+end
+
+class Edge
+  attr_reader :direction
+
+  def initialize(origin, direction)
+    @origin = origin
+    @direction = direction
+  end
+
+  def node
+    @node ||= Node.new(new_position)
+  end
+
+  def new_position
+    @new_position ||= begin
+      new_position = @origin.position.map { |row| row.clone }
+      new_position[old_open_slot[:row]][old_open_slot[:col]] = new_position[new_open_slot[:row]][new_open_slot[:col]]
+      new_position[new_open_slot[:row]][new_open_slot[:col]] = " "
+      new_position
+    end
+  end
+
+  def old_open_slot
+    @origin.open_slot
+  end
+
+  def new_open_slot
+    if @direction == "L"
+      {row: @origin.open_slot[:row], col: @origin.open_slot[:col] + 1}
+    elsif @direction == "R"
+      {row: @origin.open_slot[:row], col: @origin.open_slot[:col] - 1}
+    elsif @direction == "U"
+      {row: @origin.open_slot[:row] + 1, col: @origin.open_slot[:col]}
+    elsif @direction == "D"
+      {row: @origin.open_slot[:row] - 1, col: @origin.open_slot[:col]}
+    end
   end
 end</code></pre>
+
+<p>Standard BFS will give an optimal path, which was implemented first to explore the problem. This experimentation showed that the optimal path was 32 moves long, and could be computed in about 14 seconds.</p>
+
+<p>To enhance BFS to consider all paths of optimal length, a different notion of unprocessed needs to be introduced. Standard BFS only considers a node unprocessed if it has not yet been discovered during the processing of a previous node. In the modified form, the discovered data structure is enhanced to store the distance of an optimal path to that node, and any path matching that distance will also be considered.</p>
+
+<p>This approach is correct, but spends a large amount of its time reconsidering the same paths. In addition to tracking the optimal distance to a node, the paths already considered are ignored.</p>
+
+<pre><code class="ruby">class Path
+  attr_reader :node, :moves
+
+  def initialize(node, moves=[])
+    @node = node
+    @moves = moves
+  end
+
+  def checksum
+    checksum = 0
+    @moves.each do |move|
+      checksum = (checksum*243 + move.ord) % 100000007
+    end
+    checksum
+  end
+
+  def add_step(edge)
+    @node = edge.node
+    @moves.push(edge.direction)
+    self
+  end
+
+  def length
+    @moves.length
+  end
+
+  def clone
+    Path.new(@node, @moves.clone)
+  end
+end
+
+class BFS
+  def initialize(start, finish)
+    @finish = finish
+    @unprocessed = [Path.new(start)]
+    @shortest_distance_to_position = {start.position => 0}
+    @discovered_path_moves = {[] => true}
+  end
+
+  def minimal_paths
+    @found_paths = []
+    while work_remains?
+      path = @unprocessed.shift
+      if path.node == @finish
+        @found_paths.push(path)
+      else
+        path.node.edges.each do |edge|
+          if minimal_subpath?(path, edge)
+            @shortest_distance_to_position[edge.node.position] = path.length
+            @unprocessed.push(path.clone.add_step(edge))
+            @discovered_path_moves[path.moves] = true
+          end
+        end
+      end
+    end
+    @found_paths
+  end
+
+  def work_remains?
+    not @unprocessed.empty? and minimal_path_candidates_remain?
+  end
+
+  def minimal_path_candidates_remain?
+    @found_paths.empty? or @found_paths[0].length == @unprocessed[0].length
+  end
+
+  def minimal_subpath?(path, edge)
+    distance_threshhold(edge).nil? or exceeds_threshhold?(path, edge)
+  end
+
+  def distance_threshhold(edge)
+    @shortest_distance_to_position[edge.node.position]
+  end
+
+  def exceeds_threshhold?(path, edge)
+    distance_threshhold(edge) == path.length and not @discovered_path_moves[path.moves]
+  end
+end</code></pre>
+
+<p>With these classes in place, the only thing left is to perform the final computation for the problem:</p>
+
+<pre><code class="ruby">finish = Node.new([[" ", "B", "R", "B"],
+                   ["B", "R", "B", "R"],
+                   ["R", "B", "R", "B"],
+                   ["B", "R", "B", "R"]])
+
+start = Node.new([[" ", "R", "B", "B"],
+                  ["R", "R", "B", "B"],
+                  ["R", "R", "B", "B"],
+                  ["R", "R", "B", "B"]])
+
+print BFS.new(start, finish).minimal_paths.map { |path| path.checksum }.inject :+</code></pre>
+
+<p>Without the path optimization, the answer is found in about 5 minutes. With the optimization that is reduced to about 30 seconds. It turns out that there is only one optimal path to the board position in the problem, but that doesn't hold true for every board position.</p>
