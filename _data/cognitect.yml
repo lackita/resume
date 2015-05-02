@@ -1,0 +1,31 @@
+path: /cognitect/
+portfolio:
+  - Clojure
+  - Ruby
+  - Python
+  - Java
+  - Perl
+summary:
+  - Took a short sabbatical to focus on learning Clojure.
+  - Completed every problem on <a href="http://www.4clojure.com/">4clojure.org</a>.
+  - Founder of CodeFu, athenahealth group dedicated to improving development skills and studying interesting topics in Computer Science.
+  - Organizer of several <a href="http://coderetreat.org/">coderetreats</a>, events pair programming Conway's Game of Life.
+  - Minor contributions to several open source projects, including Python, CPAN modules and test.chuck.
+experience:
+  athenahealth:
+    subsystems:
+      - Divided over 2 million lines of Perl code into 30+ business domains.
+      - Redesigned intranet site based on feedback gathered from users.
+    qaqueue:
+      - Led a team of developers working on automated testing and release deployment.
+      - Refactored disparate ad-hoc interactions with Perforce into a single consistent interface.
+      - Ported Epocrates' databases onto athenahealth's database migration logic.
+    regressions:
+      - Built an asset management system used by most automated testing infrastructure.
+      - Built a job management system scaling regression testing from 8 to over 40 databases.
+      - Unified several different types of regressions into a single framework.
+    interfaces:
+      - Automated development process for creating interfaces between practices and several labs.
+      - Created infrastructure allowing this role to scale during a period of exponential growth.
+    bugs:
+      - Triaged bugs reported by clients during the alpha phase of Clinicals.
