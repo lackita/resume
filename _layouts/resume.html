@@ -9,7 +9,7 @@ layout: base
 			{% for contact in site.data.contact %}
 				<div class="row">
 					<div class="col-xs-4"><b>{{ contact.name }}</b></div>
-					<div class="col-xs-8">{{ contact.contact }}</div>
+					<div class="col-xs-8">{{ contact.contact }}{% if contact.company-specific and page.data != "default" %}{{ site.data[page.data].path }}{% endif %}</div>
 				</div>
 			{% endfor %}
 		</div>

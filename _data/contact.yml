@@ -2,10 +2,11 @@
   href: mailto:colin@colinwilliams.name
   contact: colin@colinwilliams.name
 - name: Resume
-  href: http://resume.colinwilliams.name/
+  href: http://resume.colinwilliams.name
   contact: resume.colinwilliams.name
+  company-specific: true
 - name: Blog
-  href: http://blog.colinwilliams.name/
+  href: http://blog.colinwilliams.name
   contact: blog.colinwilliams.name
 - name: GitHub
   href: https://github.com/lackita

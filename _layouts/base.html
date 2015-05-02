@@ -30,7 +30,10 @@
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Contact <span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
 								{% for contact in site.data.contact %}
-									<li><a href="{{ contact.href }}"><b>{{ contact.name }}</b> <span class="contact">{{ contact.contact }}</span></a></li>
+									<li><a href="{{ contact.href }}{% if contact.company-specific %}{{ site.data[page.data].path }}{% endif %}">
+										<b>{{ contact.name }}</b>
+										<span class="contact">{{ contact.contact }}{% if contact.company-specific and page.data != "default" %}{{ site.data[page.data].path }}{% endif %}</span>
+									</a></li>
 								{% endfor %}
 							</ul>
 						</li>
