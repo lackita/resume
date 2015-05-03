@@ -1,8 +1,8 @@
 path: /netflix/
 portfolio:
+  - Python
   - Clojure
   - Ruby
-  - Python
   - Java
   - Perl
 summary:
