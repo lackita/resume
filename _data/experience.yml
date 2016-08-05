@@ -1,23 +1,26 @@
 primary:
+  - name: TripAdvisor
+    key: tripadvisor
+    dates: 2015-present
+    positions:
+      - title: Senior Software Engineer
+        key: tripadvisor
   - name: athenahealth
     key: athenahealth
-    dates: 2006-present
+    dates: 2006-2015
     positions:
       - title: Senior Developer Subsystems
         key: subsystems
         dates: 2014-present
-      - title: Team Lead QA Queue
+      - title: Team Lead Test Automation Infrastructure
         key: qaqueue
         dates: 2013-2014
       - title: Senior Developer Regression Testing
         key: regressions
         dates: 2011-2012
-      - title: Developer Clinicals Interfaces
-        key: interfaces
-        dates: 2008-2010
-      - title: Developer Clinicals Bug Queue
-        key: bugs
-        dates: 2006-2007
+      - title: Developer Clinicals
+        key: clinicals
+        dates: 2006-2010
 secondary:
   - name: Intern Acxiom
     key: acxiom
