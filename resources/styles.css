@@ -8,10 +8,6 @@ dl.horizontal > dt {
 	width: 80px;
 }
 
-a[href]:after {
-	content: none;
-}
-
 .dropdown-menu b {
 	position: absolute;
 }

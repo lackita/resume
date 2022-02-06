@@ -1,0 +1,90 @@
+skills:
+  - title: Kubernetes and Cloud Infrastructure
+    visible: true
+    description: >-
+      Able to set up and maintain Kubernetes clusters and cloud
+      infrastructure. Smoothly converted to AWS with minimal
+      disruption to clients, cutting operation costs by more than
+      half.
+  - title: Language Polyglot
+    visible: true
+    description: >-
+      Have worked professionally in five different programming
+      languages and built side projects in over twice that many. Is
+      capable of learning and becoming proficient in new ones quickly.
+  - title: Code Assimilation
+    visible: true
+    description: >-
+      Capable of learning a new codebase rapidly, quickly becoming a
+      productive member of the team.
+  - title: Passion for Programming
+    description: >-
+      A track record of presenting on various software development
+      topics within the community. Created a company-wide group to
+      help developers improve their skills.
+  - title: Team Leadership
+    description: >-
+      Experience leading a team through rapid growth, smoothly
+      predicting bottlenecks and scaling the system to handle many
+      times its original volume.
+  - title: Issue Diagnosis
+    description: >-
+      Quickly understands and methodically verifies issues. Often able
+      to identify and accurately execute a resolution within a short
+      period of time.
+  - title: API Divination
+    description: >-
+      Comprehends third party APIs which are incredibly opaque, and is
+      able to build valuable systems on top of them.
+  - title: Product Management
+    description: >-
+      Able to work closely with product managers to come up with plans
+      that are realistic yet ambitious.
+recent-experience:
+  - name: Phreesia
+    time: 2021-Present
+    roles:
+      - time: 2021-Present
+        title: Architect
+        highlights:
+          - Smoothly took over leadership of the team after a successful acquisition.
+          - Built processes and infrastructure enabling the team to smoothly triple in size.
+          - Anticipated and countered scaling issues as the client base grew rapidly.
+  - name: QueueDr
+    time: 2016-2021
+    roles:
+      - time: 2019-2021
+        title: Lead Developer
+        highlights:
+          - Key employee in successful acquisition of the company by Phreesia.
+          - Transitioned infrastructure from Datica to AWS with minimal disruption to clients, cutting operations costs by more than half.
+          - Built a system for accurately identifying and rescheduling patients with many appointments on the same day.
+        details:
+          - Assisted in leading the team through many company challenges.
+      - time: 2016-2019
+        title: Senior Developer
+        highlights:
+          - Built integrations with the APIs for Greenway and Epic, expanding the company's growth into new markets.
+          - Expanded the company's product offering beyond cancellations to bumps and no shows.
+        details:
+          - Designed stronger system abstractions, substantially reducing duplication improving overall code integrity.
+older-experience:
+  - name: TripAdvisor
+    time: 2015-2016
+    titles: Senior Software Engineer
+    highlights:
+      - Optimized property loading process.
+    details:
+      - Oversaw migration of complicated server to new data center.
+  - name: athenahealth
+    time: 2006-2015
+    titles: Developer/Senior Developer
+    highlights:
+      - Led subsystems effort.
+      - Improved testing infrastructure.
+    details:
+      - Helped lead effort to divide 2 million line codebase into subsystems.
+      - Built system to expand automated testing from 8 to 40 databases.
+      - Automated process for creating interfaces between medical practices and several labs.
+      - Created mock and stub infrastructure for home-grown unit testing framework.
+      - Maintained code for administering Physical Exams.

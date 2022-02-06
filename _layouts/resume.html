@@ -3,46 +3,81 @@ layout: base
 ---
 
 <div class="container">
-	<div class="row visible-print-block header">
-		<div class="col-xs-6"><h1>Colin Williams</h1></div>
-		<div class="col-xs-6">
-			{% for contact in site.data.contact %}
-				<div class="row">
-					<div class="col-xs-4"><b>{{ contact.name }}</b></div>
-					<div class="col-xs-8">{{ contact.contact }}{% if contact.company-specific and page.data != "default" %}{{ site.data[page.data].path }}{% endif %}</div>
-				</div>
-			{% endfor %}
-		</div>
-	</div>
+  <div class="row d-none d-print-flex header">
+    <div class="col"><h1>Colin Williams</h1></div>
+    <div class="col">
+      {% for contact in site.data.contact %}
+        <div class="row">
+          <div class="col-4"><b>{{ contact.name }}</b></div>
+          <div class="col-8">
+            {{ contact.contact }}
+            {% if contact.company-specific and page.data != "default" %}
+              {{ site.data[page.data].path }}
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
 
-	<div class="row">
-		<div class="col-xs-12">
-			<div class="well">
-				<ul class="list-unstyled">
-					{% for summary in site.data[page.data].summary %}
-					  <li>{{ summary }}</li>
-					{% endfor %}
-				</ul>
-			</div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-xs-12">
-			<h4>Experience</h4>
-			{% include experience.html focus="primary" %}
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-xs-6">
-			{% include experience.html focus="secondary" %}
-		</div>
-		<div class="col-xs-6">
-			<h4>Education</h4>
-			<dl class="indent-dd">
-				<dt>Hendrix College 2002-2006</dt>
-				<dd>Double major in Mathematics and Computer Science, with distinction</dd>
-				<dd>Robert C. Eslinger Computer Science Award</dd>
-			</dl>
-		</div>
-	</div>
+  <div class="row">
+    <div class="col">
+      <h4>Skills</h4>
+      <dl class="indent-dd">
+        {% for skill in site.data['resume'].skills %}
+          {% if skill.visible %}
+            <dt>{{ skill.title }}</dt>
+            <dd>{{ skill.description }}</dd>
+          {% endif %}
+        {% endfor %}
+      </dl>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <h4>Experience</h4>
+      <dl class="indent-dd">
+        {% for company in site.data['resume'].recent-experience %}
+          <dt>{{ company.name }} {{ company.time }}</dt>
+          <dd>
+            <dl>
+              {% for role in company.roles %}
+                <dt>{{ role.title }} {{ role.time }}</dt>
+                <dd>
+                  <ul>
+                    {% for highlight in role.highlights %}
+                      <li>{{ highlight }}</li>
+                    {% endfor %}
+                  </ul>
+                </dd>
+              {% endfor %}
+            </dl>
+          </dd>
+        {% endfor %}
+      </dl>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <dl class="indent-dd">
+        {% for company in site.data['resume'].older-experience %}
+          <dt>{{ company.name }} {{ company.time }}</dt>
+          <dd>
+            {% for highlight in company.highlights %}
+              <li>{{ highlight }}</li>
+            {% endfor %}
+          </dd>
+        {% endfor %}
+    </div>
+    <div class="col">
+      <h4>Education</h4>
+      <dl class="indent-dd">
+	<dt>Hendrix College 2002-2006</dt>
+	<dd>Double major in Mathematics and Computer Science, with distinction</dd>
+	<dd>Robert C. Eslinger Computer Science Award</dd>
+      </dl>
+    </div>
+  </div>
 </div>

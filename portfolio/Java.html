@@ -1,3 +1,9 @@
+---
+layout: portfolio
+sample: Java
+collection: portfolio
+---
+
 <h2>Background</h2>
 
 <p>In building a <a href="https://github.com/lackita/ZombieSimulator">program to simulate a zombie invasion</a>, collision detection presented an interesting problem when working with large numbers of humans and zombies, represented by black and green dots respectively.</p>
@@ -22,7 +28,7 @@
     public Point get_center() {
 	return center;
     }
-    
+
     public int get_radius() {
 	return radius;
     }</code></pre>
@@ -43,7 +49,7 @@
 		corners.add(square_corner_containing(new Point(x, y)));
 	    }
 	}
-	
+
 	return corners;
     }
 
@@ -57,7 +63,7 @@
 	if (p.y < 0 && p.y % 10 != 0) square_corner.y -= 10;
 	square_corner.x += Math.abs(square_corner.x % 10);
 	square_corner.y += Math.abs(square_corner.y % 10);
-	
+
 	return square_corner;
     }
 }</code></pre>

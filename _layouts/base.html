@@ -1,44 +1,52 @@
 <html>
   <head>
     <title>Colin Williams - Resume</title>
-    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="/resources/styles.css">
     <link rel="stylesheet" href="/resources/highlight.css">
-    <script src="/resources/highlight.pack.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
   </head>
   <body>
-    <nav class="navbar navbar-fixed-top navbar-default">
+    <nav class="navbar navbar-expand-sm fixed-top navbar-light bg-light d-print-none">
       <div class="container-fluid">
-	<div class="navbar-header">
-	  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#header">
-	    <span class="sr-only">Toggle navigation</span>
-	    <span class="icon-bar"></span>
-	    <span class="icon-bar"></span>
-	    <span class="icon-bar"></span>
-	  </button>
-	  <a class="navbar-brand" href="#"><b class="text-primary">Colin Williams</b></a>
-	</div>
-
-	<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-	  <ul class="nav navbar-nav">
-	    <li class="dropdown">
-	      <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Contact <span class="caret"></span></a>
-	      <ul class="dropdown-menu" role="menu">
+        <a class="navbar-brand" href="/">Colin Williams</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-links" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar-links">
+          <ul class="navbar-nav">
+	    <li class="nav-item dropdown">
+	      <a class="nav-link dropdown-toggle" href="#" id="contact-dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Contact
+              </a>
+	      <ul class="dropdown-menu" aria-labelledby="contact-dropdown">
 		{% for contact in site.data.contact %}
-		<li><a href="{{ contact.href }}{% if contact.company-specific %}{{ site.data[page.data].path }}{% endif %}">
-		    <b>{{ contact.name }}</b>
-		    <span class="contact">{{ contact.contact }}{% if contact.company-specific and page.data != "default" %}{{ site.data[page.data].path }}{% endif %}</span>
-		</a></li>
+                  <li>
+                    <a class="dropdown-item"
+                      href="{{ contact.href }}{% if contact.company-specific %}{{ site.data[page.data].path }}{% endif %}">
+                      <b>{{ contact.name }}</b>
+                      <span class="contact">
+                        {{ contact.contact }}
+                        {% if contact.company-specific and page.data != "default" %}
+                          {{ site.data[page.data].path }}
+                        {% endif %}
+                      </span>
+                    </a>
+                  </li>
 		{% endfor %}
 	      </ul>
 	    </li>
-	    <li{% if page.type == "resume" %} class="active"{% endif %}><a href="{{ site.data[page.data].path }}">Resume <span href="Colin_Williams.pdf" class="print glyphicon glyphicon-print"></span></a></li>
-	    <li{% if page.type == "portfolio" %} class="active"{% endif %}><a href="{{ site.data[page.data].path }}portfolio">Portfolio</a></li>
+	    <li class="nav-item">
+              <a class="nav-link{% if page.type == "resume" %} active{% endif %}" href="/">
+                Resume
+                <i href="Colin_Williams.pdf" class="bi bi-printer-fill print"></i>
+              </a>
+            </li>
+	    <li class="nav-item">
+              <a class="nav-link{% if page.collection == "portfolio" %} active{% endif %}" href="/portfolio/Ruby">
+                Portfolio
+              </a>
+            </li>
 	  </ul>
 	</div>
       </div>
@@ -46,13 +54,18 @@
 
     {{ content }}
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="/resources/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script>
-      $(document).ready(function () {
-      $(".print").on("click", function() {
-      window.location.href = "/printable{{ site.data[page.data].path }}Colin_Williams_Resume.pdf";
-      return false;
-      });
-      });
+     $(document).ready(function () {
+         $(".print").on("click", function() {
+             window.location.href = "/printable/{{ site.data[page.data].path }}Colin_Williams_Resume.pdf";
+             return false;
+         });
+     });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
   </body>
 </html>

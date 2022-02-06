@@ -1,5 +1,0 @@
-collections:
-  companies:
-    output: true
-    permalink: /:path/
-

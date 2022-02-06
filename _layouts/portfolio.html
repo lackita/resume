@@ -3,27 +3,25 @@ layout: base
 ---
 
 <div class="container">
-	<div class="row">
-		<div class="col-xs-12">
-			<div role="tabpanel">
-				<ul class="nav nav-tabs" role="tablist">
-					{% for sample in site.data[page.data].portfolio %}
-					    <li role="presentation"{% if sample == site.data[page.data].portfolio[0] %} class="active"{% endif %}>
-							<a href="#{{ sample }}" role="tab" data-toggle="tab">
-								{{ sample }}
-							</a>
-						</li>
-					{% endfor %}
-				</ul>
+  <div class="row">
+    <div class="col">
+      <ul class="nav nav-tabs">
+	{% for sample in site.data['portfolio'].samples %}
+          <li class="nav-item">
+	    <a class="nav-link{% if sample == page.sample %} active{% endif %}"
+              aria-current="true"
+              href="/{{ site.data[page.data].path }}portfolio/{{ sample }}.html">
+	      {{ sample }}
+	    </a>
+	  </li>
+	{% endfor %}
+      </ul>
+    </div>
+  </div>
 
-				<div class="tab-content">
-					{% for sample in site.data[page.data].portfolio %}
-					    <div role="tabpanel" class="tab-pane{% if sample == site.data[page.data].portfolio[0] %} active{% endif %}" id="{{ sample }}">
-							{% include {{ sample }}.html %}
-						</div>
-					{% endfor %}
-				</div>
-			</div>
-		</div>
-	</div>
+  <div class="row">
+    <div class="col">
+      {{ content }}
+    </div>
+  </div>
 </div>
